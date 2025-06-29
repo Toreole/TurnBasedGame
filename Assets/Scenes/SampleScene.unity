@@ -418,7 +418,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249afa691b8347f4ea2b316d9d354690, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _CombatGUI: {fileID: 283467765}
+  _combatGUI: {fileID: 283467765}
+  _allyUnits:
+  - _unitName: Ally A
+    _maxHealth: 0
+    _maxMana: 0
+    _isPlayerControlled: 1
+    _minDamage: 2
+    _maxDamage: 12
+  - _unitName: Ally B
+    _maxHealth: 0
+    _maxMana: 0
+    _isPlayerControlled: 1
+    _minDamage: 5
+    _maxDamage: 8
+  _enemyUnits:
+  - _unitName: Goblin A
+    _maxHealth: 0
+    _maxMana: 0
+    _isPlayerControlled: 0
+    _minDamage: 1
+    _maxDamage: 5
+  - _unitName: Goblin B
+    _maxHealth: 0
+    _maxMana: 0
+    _isPlayerControlled: 0
+    _minDamage: 2
+    _maxDamage: 7
 --- !u!4 &443194378
 Transform:
   m_ObjectHideFlags: 0

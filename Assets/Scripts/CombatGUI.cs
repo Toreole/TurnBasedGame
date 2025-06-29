@@ -3,6 +3,7 @@
 /// <summary>
 /// Abstract class that provides the interface for the CombatGUI to the CombatSystem.
 /// This would have been an interface, if unity could serialize those by reference.
+/// Can technically be used for more than just Combat.
 /// </summary>
 // loose coupling, you know how it is.
 public abstract class CombatGUI : MonoBehaviour

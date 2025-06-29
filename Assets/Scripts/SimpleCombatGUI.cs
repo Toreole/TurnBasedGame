@@ -27,15 +27,18 @@ namespace Assets.Scripts
             var options = new GameObject[actions.Length];
             _selectionPanel.SetActive(true);
             //clear sections
-            for (int i = _selectionPanel.transform.childCount; i > 0; i--)
+            Debug.Log($"selectionPanel had {_selectionPanel.transform.childCount} children still");
+            for (int i = _selectionPanel.transform.childCount-1; i >= 0; i--)
             {
-                Destroy(_selectionPanel.transform.GetChild(0).gameObject);
+                Destroy(_selectionPanel.transform.GetChild(i).gameObject);
             }
+            Debug.Log($"selectionPanel had {_selectionPanel.transform.childCount} after destroying");
             // instantiate new sections.
             for (int i = 0; i < sectionCount; i++)
             {
                 var section = new GameObject();
                 section.transform.parent = _selectionPanel.transform;
+                section.transform.localScale = Vector3.one; //for some reason this comes out at 1.8 otherwise
                 var sectionGroup = section.AddComponent<VerticalLayoutGroup>();
                 sectionGroup.padding = new RectOffset(50, 0, 0, 0);
                 sectionGroup.childControlHeight = false;
@@ -92,7 +95,7 @@ namespace Assets.Scripts
             _textPanel.SetActive(true);
             _textPanelContent.text = text;
             //wait a minimum delay
-            await Awaitable.WaitForSecondsAsync(2f);
+            await Awaitable.WaitForSecondsAsync(1f);
             //show confirmation prompt
             _textPanelConfirm.SetActive(true);
             //wait for input by user
@@ -100,6 +103,7 @@ namespace Assets.Scripts
                 await Awaitable.NextFrameAsync();
             //disable ui elements again
             _textPanel.SetActive(false);
+            _textPanelConfirm.SetActive(false);
         }
     }
 }
