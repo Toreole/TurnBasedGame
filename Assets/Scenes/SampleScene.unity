@@ -383,12 +383,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cb802db17d4ad94888f158446331a62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_textPanel: {fileID: 1510215347}
-  m_textPanelContent: {fileID: 1812890230}
-  m_textPanelConfirm: {fileID: 972016320}
-  m_selectionPanel: {fileID: 1823546303}
-  m_selectionOptionPrefab: {fileID: 4142705754498429538, guid: 8b25d4fb3e880a14c9218e0f0ca4798b, type: 3}
-  m_optionsPerSection: 3
+  _textPanel: {fileID: 1510215347}
+  _textPanelContent: {fileID: 1812890230}
+  _textPanelConfirm: {fileID: 972016320}
+  _selectionPanel: {fileID: 1823546303}
+  _selectionOptionPrefab: {fileID: 4142705754498429538, guid: 8b25d4fb3e880a14c9218e0f0ca4798b, type: 3}
+  _optionsPerSection: 3
 --- !u!1 &443194376
 GameObject:
   m_ObjectHideFlags: 0
@@ -418,7 +418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249afa691b8347f4ea2b316d9d354690, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_CombatGUI: {fileID: 283467765}
+  _CombatGUI: {fileID: 283467765}
 --- !u!4 &443194378
 Transform:
   m_ObjectHideFlags: 0

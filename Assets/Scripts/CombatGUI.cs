@@ -5,7 +5,7 @@
 /// This would have been an interface, if unity could serialize those by reference.
 /// </summary>
 // loose coupling, you know how it is.
-public abstract class CombatGUI: MonoBehaviour
+public abstract class CombatGUI : MonoBehaviour
 {
     /// <summary>
     /// Show a dismissable text on the GUI. 

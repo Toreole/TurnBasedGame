@@ -3,14 +3,14 @@
 public class CombatUnit
 {
     [SerializeField]
-    private float m_maxHealth;
+    private float _maxHealth;
     [SerializeField]
-    private float m_maxMana;
+    private float _maxMana;
 
     // for basic attacks.
     // replace this with a weapon with those attributes.
     [SerializeField]
-    private float minDamage, maxDamage;
+    private float _minDamage, _maxDamage;
 
     // special abilities / spells that do unique things.
     //[SerializeField]
@@ -18,7 +18,7 @@ public class CombatUnit
 
     public float GetAttackDamage()
     {
-        return Mathf.Lerp(minDamage, maxDamage, Random.value);
+        return Mathf.Lerp(_minDamage, _maxDamage, Random.value);
     }
 }
 

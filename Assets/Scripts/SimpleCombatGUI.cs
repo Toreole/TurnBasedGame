@@ -7,46 +7,46 @@ namespace Assets.Scripts
     public class SimpleCombatGUI : CombatGUI
     {
         [SerializeField]
-        private GameObject m_textPanel;
+        private GameObject _textPanel;
         [SerializeField]
-        private TextMeshProUGUI m_textPanelContent;
+        private TextMeshProUGUI _textPanelContent;
         [SerializeField]
-        private GameObject m_textPanelConfirm;
+        private GameObject _textPanelConfirm;
 
         [SerializeField]
-        private GameObject m_selectionPanel;
+        private GameObject _selectionPanel;
         [SerializeField]
-        private GameObject m_selectionOptionPrefab;
+        private GameObject _selectionOptionPrefab;
         [SerializeField]
-        private int m_optionsPerSection;
+        private int _optionsPerSection;
 
         public override async Awaitable<int> SelectActionAsync(string[] actions)
         {
-            var sectionCount = Mathf.CeilToInt(actions.Length / (float)m_optionsPerSection);
-            Debug.Log($"{actions.Length} actions -> {sectionCount} sections, {m_optionsPerSection} each");
+            var sectionCount = Mathf.CeilToInt(actions.Length / (float)_optionsPerSection);
+            Debug.Log($"{actions.Length} actions -> {sectionCount} sections, {_optionsPerSection} each");
             var options = new GameObject[actions.Length];
-            m_selectionPanel.SetActive(true);
+            _selectionPanel.SetActive(true);
             //clear sections
-            for (int i = m_selectionPanel.transform.childCount; i > 0; i--)
+            for (int i = _selectionPanel.transform.childCount; i > 0; i--)
             {
-                Destroy(m_selectionPanel.transform.GetChild(0).gameObject);
+                Destroy(_selectionPanel.transform.GetChild(0).gameObject);
             }
             // instantiate new sections.
             for (int i = 0; i < sectionCount; i++)
             {
                 var section = new GameObject();
-                section.transform.parent = m_selectionPanel.transform;
+                section.transform.parent = _selectionPanel.transform;
                 var sectionGroup = section.AddComponent<VerticalLayoutGroup>();
                 sectionGroup.padding = new RectOffset(50, 0, 0, 0);
                 sectionGroup.childControlHeight = false;
                 sectionGroup.childControlWidth = false;
 
-                for (int j = 0; j < m_optionsPerSection; j++)
+                for (int j = 0; j < _optionsPerSection; j++)
                 {
-                    var index = i * m_optionsPerSection + j;
+                    var index = i * _optionsPerSection + j;
                     if (index >= actions.Length)
                         break;
-                    options[index] = Instantiate(m_selectionOptionPrefab, section.transform);
+                    options[index] = Instantiate(_selectionOptionPrefab, section.transform);
                     options[index].GetComponent<TextMeshProUGUI>().text = actions[index];
                     // from now on just the indicator
                     options[index] = options[index].transform.GetChild(0).gameObject;
@@ -65,9 +65,9 @@ namespace Assets.Scripts
                 else if (Input.GetKeyDown(KeyCode.DownArrow))
                     selectionIndex++;
                 else if (Input.GetKeyDown(KeyCode.LeftArrow))
-                    selectionIndex -= m_optionsPerSection;
+                    selectionIndex -= _optionsPerSection;
                 else if (Input.GetKeyDown(KeyCode.RightArrow))
-                    selectionIndex += m_optionsPerSection;
+                    selectionIndex += _optionsPerSection;
                 if (selectionIndex >= 0 && selectionIndex < options.Length)
                 {
                     options[oldSelection].SetActive(false);
@@ -80,7 +80,7 @@ namespace Assets.Scripts
             }
 
             // hide selection UI again.
-            m_selectionPanel.SetActive(false);
+            _selectionPanel.SetActive(false);
 
             return selectionIndex;
         }
@@ -88,18 +88,18 @@ namespace Assets.Scripts
         public override async Awaitable ShowDismissableTextAsync(string text)
         {
             //setup ui elements
-            m_selectionPanel.SetActive(false);
-            m_textPanel.SetActive(true);
-            m_textPanelContent.text = text;
+            _selectionPanel.SetActive(false);
+            _textPanel.SetActive(true);
+            _textPanelContent.text = text;
             //wait a minimum delay
             await Awaitable.WaitForSecondsAsync(2f);
             //show confirmation prompt
-            m_textPanelConfirm.SetActive(true);
+            _textPanelConfirm.SetActive(true);
             //wait for input by user
             while (Input.anyKeyDown == false)
                 await Awaitable.NextFrameAsync();
             //disable ui elements again
-            m_textPanel.SetActive(false);
+            _textPanel.SetActive(false);
         }
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 public class CombatSystem : MonoBehaviour
 {
     [SerializeField]
-    private CombatGUI m_CombatGUI;
+    private CombatGUI _combatGUI;
 
     // for testing stuff.
     private void Start()
@@ -14,7 +14,7 @@ public class CombatSystem : MonoBehaviour
     private async void TestStuffAsync()
     {
         var options = new string[] { "hello", "world", "this", "is", "a", "test", "lmao" };
-        var selectedIndex = await m_CombatGUI.SelectActionAsync(options);
-        await m_CombatGUI.ShowDismissableTextAsync($"Selected {options[selectedIndex]}!");
+        var selectedIndex = await _combatGUI.SelectActionAsync(options);
+        await _combatGUI.ShowDismissableTextAsync($"Selected {options[selectedIndex]}!");
     }
 }
