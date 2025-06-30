@@ -12,6 +12,18 @@ public class CombatSystem : MonoBehaviour
     private List<CombatUnit> _allyUnits = new();
     [SerializeField]
     private List<CombatUnit> _enemyUnits = new();
+     
+    // this is all very crude.
+    [SerializeField]
+    private GameObject _allyPrefab;
+    [SerializeField]
+    private GameObject _enemyPrefab;
+    [SerializeField]
+    private Transform _allyArea;
+    [SerializeField]
+    private Transform _enemyArea;
+    [SerializeField]
+    private Vector2 _unitSpacing;
 
     private List<CombatUnit> _combatOrder;
 
@@ -31,6 +43,10 @@ public class CombatSystem : MonoBehaviour
         _combatOrder = new();
         _combatOrder.AddRange(_allyUnits);
         _combatOrder.AddRange(_enemyUnits);
+        for (int i = 0; i < _allyUnits.Count; i++)
+            Instantiate(_allyPrefab, _allyArea).transform.localPosition = _unitSpacing * i;
+        for (int i = 0; i < _allyUnits.Count; i++)
+            Instantiate(_enemyPrefab, _enemyArea).transform.localPosition = _unitSpacing * i;
         // randomize order for now.
         for (int i = 0; i < _combatOrder.Count * 2; i++)
         {
@@ -41,6 +57,7 @@ public class CombatSystem : MonoBehaviour
         // now do each units turn after each other.
         while (_combatOrder.Count > 0) // while combat is still active
         {
+            // TODO: this would not allow units to be taken out of combat
             for (int i = 0; i < _combatOrder.Count; i++)
             {
                 await _combatOrder[i].DoTurnAsync(this, _combatGUI);
@@ -63,18 +80,47 @@ public class CombatSystem : MonoBehaviour
 
     public async Awaitable<CombatUnit> SelectEnemyUnitAsync(CombatUnit sourceUnit)
     {
-        var enemies = _allyUnits.Contains(sourceUnit) ? _enemyUnits : _allyUnits;
-        return await SelectUnitAsync(enemies);
+        var unitIsAlly = _allyUnits.Contains(sourceUnit);
+        var enemies = unitIsAlly ? _enemyUnits : _allyUnits;
+        var parent = unitIsAlly ? _enemyArea : _allyArea;
+        return await SelectUnitAsync(enemies, parent);
     }
     public async Awaitable<CombatUnit> SelectAllyUnitAsync(CombatUnit sourceUnit)
     {
-        var allies = _allyUnits.Contains(sourceUnit) ? _allyUnits : _enemyUnits;
-        return await SelectUnitAsync(allies);
+        var unitIsAlly = _allyUnits.Contains(sourceUnit);
+        var allies = unitIsAlly ? _allyUnits : _enemyUnits;
+        var parent = unitIsAlly ? _allyArea : _allyArea;
+        return await SelectUnitAsync(allies, parent);
     }
 
-    private async Awaitable<CombatUnit> SelectUnitAsync(IList<CombatUnit> units)
+    private async Awaitable<CombatUnit> SelectUnitAsync(IList<CombatUnit> units, Transform instanceParent)
     {
-        var selectionIndex = await _combatGUI.SelectActionAsync(units.Select(x => x.UnitName).ToArray());
-        return units[selectionIndex];
+        // var selectionIndex = await _combatGUI.SelectActionAsync(units.Select(x => x.UnitName).ToArray());
+        // return units[selectionIndex];
+
+        // in this scenario, an instanced prefab exists for each combat unit.
+        var selectedIndex = 0;
+        instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(true);
+        while (Input.GetKeyDown(KeyCode.Return) == false)
+        {
+            var oldSelection = selectedIndex;
+
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+                selectedIndex++;
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+                selectedIndex--;
+            if (selectedIndex < 0 || selectedIndex >= units.Count)
+            {
+                selectedIndex = oldSelection;
+            } 
+            else
+            {
+                instanceParent.GetChild(oldSelection).GetChild(0).gameObject.SetActive(false);
+                instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(true);
+            }
+            await Awaitable.NextFrameAsync();
+        }
+        instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(false);
+        return units[selectedIndex];
     }
 }
