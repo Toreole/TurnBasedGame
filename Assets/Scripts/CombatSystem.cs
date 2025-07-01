@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class CombatSystem : MonoBehaviour
@@ -38,6 +37,28 @@ public class CombatSystem : MonoBehaviour
         var options = new string[] { "hello", "world", "this", "is", "a", "test", "lmao" };
         var selectedIndex = await _combatGUI.SelectActionAsync(options);
         await _combatGUI.ShowDismissableTextAsync($"Selected {options[selectedIndex]}!");
+
+
+        await Awaitable.NextFrameAsync();
+        var advOptions = new TempTest[] 
+        { 
+            new("Hello", "This is a thing now. Yeah wahoo."),
+            new("Two", "Two"),
+            new("Three", "Three"),
+            new("Four", "Four"),
+            new("Five", "5"),
+            new("6", "6"),
+            new("7", "7"),
+            new("8", "8"),
+            new("9", "9"),
+            new("10", "10"),
+            new("11", "11"),
+            new("12", "12"),
+            new("13", "13"),
+            new("Goodbye", "This is other text instead of whatever was here before...") 
+        };
+        selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions);
+        await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions[selectedIndex].Name}");
 
         // combat test.
         _combatOrder = new();
@@ -122,5 +143,15 @@ public class CombatSystem : MonoBehaviour
         }
         instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(false);
         return units[selectedIndex];
+    }
+
+    class TempTest : INameAndDescription
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public TempTest(string n, string d)
+        {
+            Name = n; Description = d;
+        }
     }
 }

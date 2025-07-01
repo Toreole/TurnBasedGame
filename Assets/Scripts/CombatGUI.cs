@@ -22,5 +22,12 @@ public abstract class CombatGUI : MonoBehaviour
     /// <param name="actions">List of actions by name.</param>
     /// <returns>Index of the selected action.</returns>
     public abstract Awaitable<int> SelectActionAsync(string[] actions);
+
+    /// <summary>
+    /// Asynchronously select one of a given set of items, displaying their name and descriptions.
+    /// </summary>
+    /// <param name="items">List of options.</param>
+    /// <returns>index of selected option.</returns>
+    public abstract Awaitable<int> SelectDescriptiveAsync(INameAndDescription[] items);
 }
 
