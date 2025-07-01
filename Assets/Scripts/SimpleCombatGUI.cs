@@ -144,15 +144,15 @@ namespace Assets.Scripts
                     options[selectedIndex].SetActive(true);
                     _advSelectionDescription.text = items[selectedIndex].Description;
 
-                    // update grid "scroll" if necessary
-                    // _optionsPerSection is important for this.
+                    // there could be a possible way of handling up/down scrolling differently
+                    // that requires tracking currentScrollRowIndex, but this is fine as it is.
+                    // calculate grid "scroll" offset.
                     int row = selectedIndex / 2;
-                    _advSelArrowUp.SetActive(row > firstRowToScroll);
-                    _advSelArrowDown.SetActive(row - _optionsPerSection < amountOfScrollRows);
                     int rowScroll = Mathf.Clamp(row - firstRowToScroll, 0, amountOfScrollRows);
-                    // also grid.cellSize.y -> grid.padding.top (negative)
-                    //hide/show arrows when needed.
                     _advSelectionGrid.padding = new RectOffset(0, 0, -(rowScroll * Mathf.CeilToInt(_advSelectionGrid.cellSize.y)), 0);
+
+                    _advSelArrowUp.SetActive(row > firstRowToScroll);
+                    _advSelArrowDown.SetActive(rowCount > _optionsPerSection && row - _optionsPerSection < amountOfScrollRows);
                 }
                 else
                 {

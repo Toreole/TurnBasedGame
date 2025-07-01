@@ -37,9 +37,8 @@ public class CombatSystem : MonoBehaviour
         var options = new string[] { "hello", "world", "this", "is", "a", "test", "lmao" };
         var selectedIndex = await _combatGUI.SelectActionAsync(options);
         await _combatGUI.ShowDismissableTextAsync($"Selected {options[selectedIndex]}!");
-
-
         await Awaitable.NextFrameAsync();
+
         var advOptions = new TempTest[] 
         { 
             new("Hello", "This is a thing now. Yeah wahoo."),
@@ -59,6 +58,17 @@ public class CombatSystem : MonoBehaviour
         };
         selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions);
         await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions[selectedIndex].Name}");
+        await Awaitable.NextFrameAsync();
+        //again with fewer options
+        var advOptions2 = new TempTest[]
+        {
+            new("Hello", "This is a thing now. Yeah wahoo."),
+            new("Two", "Two"),
+            new("Goodbye", "This is other text instead of whatever was here before...")
+        };
+        selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions2);
+        await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions2[selectedIndex].Name}");
+        await Awaitable.NextFrameAsync();
 
         // combat test.
         _combatOrder = new();
