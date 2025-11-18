@@ -6,8 +6,24 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 [Serializable]
-public class CombatUnit
+public class CombatUnit : INameAndDescription
 {
+    public CombatUnit()
+    {
+
+    }
+    // all of these are taken from UnitDefinition is the idea.
+    // about the name im not so sure.
+    public CombatUnit(string unitName, float maxHealth, float maxMana, bool isPlayerControlled, float minDamage, float maxDamage)
+    {
+        _unitName = unitName;
+        _maxHealth = maxHealth;
+        _maxMana = maxMana;
+        _isPlayerControlled = isPlayerControlled;
+        _minDamage = minDamage;
+        _maxDamage = maxDamage;
+    }
+
     [SerializeField]
     private string _unitName;
     [SerializeField]
@@ -26,7 +42,13 @@ public class CombatUnit
     //[SerializeField]
     //private Ability[] m_abilities;
 
-    public string UnitName => _unitName;
+    public string Name => _unitName;
+
+    public string Description => "";
+
+    // TODO
+    private float _currentHealth;
+
 
     public float GetAttackDamage()
     {
@@ -50,11 +72,11 @@ public class CombatUnit
                 var target = await combat.SelectEnemyUnitAsync(this);
                 var damage = GetAttackDamage();
                 target.Damage(damage);
-                await gui.ShowDismissableTextAsync($"{UnitName} hit {target.UnitName} for {damage:0.0} damage");
+                await gui.ShowDismissableTextAsync($"{Name} hit {target.Name} for {damage:0.0} damage");
             }
             else
             {
-                await gui.ShowDismissableTextAsync($"{UnitName} decided to do nothing.");
+                await gui.ShowDismissableTextAsync($"{Name} decided to do nothing.");
             }
         }
         else
@@ -66,11 +88,11 @@ public class CombatUnit
                 var target = enemies[Random.Range(0, enemies.Count)];
                 var damage = GetAttackDamage();
                 target.Damage(damage);
-                await gui.ShowDismissableTextAsync($"{UnitName} hit {target.UnitName} for {damage:0.0} damage");
+                await gui.ShowDismissableTextAsync($"{Name} hit {target.Name} for {damage:0.0} damage");
             }
             else
             {
-                await gui.ShowDismissableTextAsync($"{UnitName} decided to do nothing.");
+                await gui.ShowDismissableTextAsync($"{Name} decided to do nothing.");
             }
         }
     }

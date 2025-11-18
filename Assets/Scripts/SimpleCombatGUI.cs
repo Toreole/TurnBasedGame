@@ -100,8 +100,12 @@ namespace Assets.Scripts
 
         public async override Awaitable<int> SelectDescriptiveAsync(INameAndDescription[] items)
         {
-            _advancedSelectionPanel.SetActive(true);
+            using (new Utility.TemporarilyActiveObject(_advancedSelectionPanel))
+            {
 
+            }
+            _advancedSelectionPanel.SetActive(true);
+            
             var gridTransform = _advSelectionGrid.transform;
             // Reset everything that isnt overridden by default.
             gridTransform.DestroyChildren();
