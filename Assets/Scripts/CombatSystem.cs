@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CombatSystem : MonoBehaviour
@@ -29,46 +30,88 @@ public class CombatSystem : MonoBehaviour
     // for testing stuff.
     private void Start()
     {
-        TestStuffAsync();
+
     }
 
-    private async void TestStuffAsync()
+    /// <summary>
+    /// Sets up enemies for combat based on any Enumerable of UnitDefinitions.
+    /// Arrays or Lists preferred for simplicity i guess.
+    /// </summary>
+    /// <param name="enemyDefs"></param>
+    public void SetupEnemies(IEnumerable<UnitDefinition> enemyDefs)
     {
-        var options = new string[] { "hello", "world", "this", "is", "a", "test", "lmao" };
-        var selectedIndex = await _combatGUI.SelectActionAsync(options);
-        await _combatGUI.ShowDismissableTextAsync($"Selected {options[selectedIndex]}!");
+        _enemyArea.DestroyChildren();
+        _enemyUnits.Clear();
+
+        // i feel like theres something better you can do here, but it will do.
+        var countByName = new Dictionary<string, int>();
+        var instancesByName = new Dictionary<string, int>();
+        foreach (var ed in enemyDefs)
+        {
+            if (countByName.ContainsKey(ed.UnitName))
+                countByName[ed.UnitName]++;
+            else
+            {
+                countByName[ed.UnitName] = 1;
+                instancesByName[ed.UnitName]++;
+            }
+        }
+        var iter = 0;
+        foreach (var ed in enemyDefs)
+        {
+            var unitName = ed.UnitName;
+            if (countByName[ed.UnitName] > 1)
+            {
+                char discriminator = (char)('A' + instancesByName[ed.UnitName]++);
+                unitName = $"{unitName} {discriminator}";
+            }
+            _enemyUnits.Add(new CombatUnit(unitName, ed));
+            Instantiate(ed.Prefab, _enemyArea).transform.localPosition = _unitSpacing * iter;
+            iter++;
+        }
+
+
+    }
+
+    private async void StartCombatAsync()
+    {
+        //var options = new string[] { "hello", "world", "this", "is", "a", "test", "lmao" };
+        //var selectedIndex = await _combatGUI.SelectActionAsync(options);
+        //await _combatGUI.ShowDismissableTextAsync($"Selected {options[selectedIndex]}!");
+        //await Awaitable.NextFrameAsync();
+
+        //var advOptions = new TempTest[] 
+        //{ 
+        //    new("Hello", "This is a thing now. Yeah wahoo."),
+        //    new("Two", "Two"),
+        //    new("Three", "Three"),
+        //    new("Four", "Four"),
+        //    new("Five", "5"),
+        //    new("6", "6"),
+        //    new("7", "7"),
+        //    new("8", "8"),
+        //    new("9", "9"),
+        //    new("10", "10"),
+        //    new("11", "11"),
+        //    new("12", "12"),
+        //    new("13", "13"),
+        //    new("Goodbye", "This is other text instead of whatever was here before...") 
+        //};
+        //selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions);
+        //await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions[selectedIndex].Name}");
+        //await Awaitable.NextFrameAsync();
+        ////again with fewer options
+        //var advOptions2 = new TempTest[]
+        //{
+        //    new("Hello", "This is a thing now. Yeah wahoo."),
+        //    new("Two", "Two"),
+        //    new("Goodbye", "This is other text instead of whatever was here before...")
+        //};
+        //selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions2);
+        //await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions2[selectedIndex].Name}");
         await Awaitable.NextFrameAsync();
 
-        var advOptions = new TempTest[] 
-        { 
-            new("Hello", "This is a thing now. Yeah wahoo."),
-            new("Two", "Two"),
-            new("Three", "Three"),
-            new("Four", "Four"),
-            new("Five", "5"),
-            new("6", "6"),
-            new("7", "7"),
-            new("8", "8"),
-            new("9", "9"),
-            new("10", "10"),
-            new("11", "11"),
-            new("12", "12"),
-            new("13", "13"),
-            new("Goodbye", "This is other text instead of whatever was here before...") 
-        };
-        selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions);
-        await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions[selectedIndex].Name}");
-        await Awaitable.NextFrameAsync();
-        //again with fewer options
-        var advOptions2 = new TempTest[]
-        {
-            new("Hello", "This is a thing now. Yeah wahoo."),
-            new("Two", "Two"),
-            new("Goodbye", "This is other text instead of whatever was here before...")
-        };
-        selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions2);
-        await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions2[selectedIndex].Name}");
-        await Awaitable.NextFrameAsync();
+        // TODO: 
 
         // combat test.
         _combatOrder = new();

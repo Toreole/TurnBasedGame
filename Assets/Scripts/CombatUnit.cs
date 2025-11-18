@@ -24,6 +24,12 @@ public class CombatUnit : INameAndDescription
         _maxDamage = maxDamage;
     }
 
+    public CombatUnit(string unitName, UnitDefinition def)
+        : this(unitName, def.MaxHealth, def.MaxMana, def.IsPlayerControlled, def.MinDamage, def.MaxDamage)
+    {
+
+    }
+
     [SerializeField]
     private string _unitName;
     [SerializeField]
