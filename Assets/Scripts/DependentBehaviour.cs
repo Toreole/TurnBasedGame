@@ -3,8 +3,8 @@ using UnityEngine;
 
 
 /// <summary>
-/// A MonoBehaviour script that is dependent on some global game state, which
-/// will be injected into this object.
+/// Just a MonoBehaviour script with a predefined Start() method
+/// that calls DependencyService.FillDependencies(this);
 /// </summary>
 public abstract class DependentBehaviour : MonoBehaviour
 {

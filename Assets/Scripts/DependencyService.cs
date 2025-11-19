@@ -13,9 +13,13 @@ internal static class DependencyService
     public static bool Register<T>(T obj, bool replace = false) where T : ProviderBehaviour
     {
         ProviderBehaviour existing = null;
-        if (dependencies.TryGetValue(typeof(T), out existing))
+        if (dependencies.TryGetValue(typeof(T), out existing) && existing != null)
         {
-            if (replace)
+            // TODO: This currently leads to undefined behaviour
+            // when a dependency is replaced, while there are still
+            // objects that hold a reference to the old one.
+            // There should be some form of event to notify dependants of an update.
+            if (replace) 
             {
                 existing.Dispose();
                 dependencies[typeof(T)] = obj;
@@ -52,41 +56,63 @@ internal static class DependencyService
 
     /// <summary>
     /// Requests all dependencies of an object to be filled if possible.
+    /// Dependencies are fields with a [Injected] Attribute.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="obj"></param>
     /// <returns>true if all dependencies could be filled. false otherwise.</returns>
     public static bool FillDependencies(UnityEngine.Object obj)
     {
-        Debug.Log($"Fill {obj.name}");
         var type = obj.GetType();
         foreach(var field in type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
         {
-            Debug.Log($"Inspecting {type.Name}.{field.Name}");
             var att = field.GetCustomAttribute<InjectedAttribute>();
             if (att == null)
                 continue;
-            Debug.Log("Field has InjectedAttribute");
-            var dependency = dependencies[field.FieldType];
-            if (dependency is null)
+            if (dependencies.ContainsKey(field.FieldType))
             {
-                var logMessage = $"Object {obj.name}#{obj.GetInstanceID()} depends on {type.FullName}, which was not registered.";
-                if (att.IsFatal)
+                var dependency = dependencies[field.FieldType];
+                if (dependency == null) // dependency in dictionary, but destroyed or otherwise null
                 {
-                    Debug.LogError(logMessage);
-                    return false;
-                } 
-                else
-                {
-                    Debug.LogWarning(logMessage);
+                    FailedDependencyLogError(obj, field.FieldType, att);
+                    if (att.IsFatal)
+                        return false;
                 }
-                    
+                field.SetValue(obj, dependency);
+            } 
+            else // dependency not in dictionary
+            {
+                FailedDependencyLogError(obj, field.FieldType, att);
+                if (att.IsFatal)
+                    return false;
             }
-            field.SetValue(obj, dependency);
         }
-
         return true;
     }
 
-}
+    // not sure whether to actually allow this or not.
+    public static T RequestDependency<T>(bool isFatal = true) where T : ProviderBehaviour
+    {
+        var type = typeof(T);
+        if (dependencies.TryGetValue(type, out var dependency))
+        {
+            if (dependency == null && isFatal)
+            {
+                throw new KeyNotFoundException(type.FullName);
+            } 
+            return dependency as T;
+        } else if (isFatal)
+            throw new KeyNotFoundException(type.FullName);
+        return null;
+    }
 
+    private static void FailedDependencyLogError(UnityEngine.Object obj, Type type, InjectedAttribute att)
+    {
+        var logMessage = $"Object {obj.name}#{obj.GetInstanceID()} depends on {type.FullName}, which was not registered.";
+        if (att.IsFatal)
+            Debug.LogError(logMessage);
+        else
+            Debug.LogWarning(logMessage);
+        
+    }
+}

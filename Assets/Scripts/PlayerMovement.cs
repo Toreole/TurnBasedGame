@@ -1,12 +1,22 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : ProviderBehaviour
 {
     [SerializeField]
     private float _speed;
 
     private Rigidbody2D _body;
+
+    public override void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    protected override bool Register()
+    {
+        return DependencyService.Register(this);
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

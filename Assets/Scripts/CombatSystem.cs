@@ -26,6 +26,8 @@ public class CombatSystem : ProviderBehaviour
 
     private List<CombatUnit> _combatOrder;
 
+    private Vector3 _oldCameraPosition;
+
     protected override bool Register()
     {
         return DependencyService.Register(this);
@@ -79,16 +81,20 @@ public class CombatSystem : ProviderBehaviour
         //_enemyArea.gameObject.SetActive(true);
         _combatArea.gameObject.SetActive(true);
 
+        _oldCameraPosition = Camera.main.transform.position;
         var pos = _combatArea.position;
         pos.z = -100;
         Camera.main.transform.position = pos;
+
+        var player = DependencyService.RequestDependency<PlayerMovement>();
+        player.enabled = false;
 
         StartCombatAsync();
     }
 
     private async void StartCombatAsync()
     {
-        // TODO: 
+        // TODO: let units die and remove them from combat.
 
         // combat test.
         _combatOrder = new();

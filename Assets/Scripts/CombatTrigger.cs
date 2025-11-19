@@ -5,8 +5,10 @@ public class CombatTrigger : DependentBehaviour
     [SerializeField]
     private UnitDefinition[] _units = null;
 
+    // unintuitive, but the dependency service can still fill this field
+    // with the correctly value despite the readonly declaration.
     [Injected(true)]
-    private CombatSystem _combatSystem = null;
+    private readonly CombatSystem _combatSystem = null;
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
