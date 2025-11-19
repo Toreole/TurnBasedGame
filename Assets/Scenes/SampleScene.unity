@@ -144,11 +144,11 @@ Transform:
   m_GameObject: {fileID: 16840464}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.325526, y: 0.50581163, z: -0.03944129}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 18.11, y: 18.11, z: 18.11}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 1536485894}
+  m_Father: {fileID: 2091264224}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &16840466
 SpriteRenderer:
@@ -221,7 +221,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &27584903
 RectTransform:
   m_ObjectHideFlags: 0
@@ -407,11 +407,11 @@ Transform:
   m_GameObject: {fileID: 313503025}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.7244742, y: -0.6741883, z: -0.03944129}
+  m_LocalPosition: {x: -5.05, y: -1.18, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1536485894}
+  m_Father: {fileID: 2091264224}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &415740216
 GameObject:
@@ -482,32 +482,19 @@ MonoBehaviour:
   _combatGUI: {fileID: 27584904}
   _allyUnits:
   - _unitName: Ally A
-    _maxHealth: 0
+    _maxHealth: 2
     _maxMana: 0
     _isPlayerControlled: 1
     _minDamage: 2
     _maxDamage: 12
   - _unitName: Ally B
-    _maxHealth: 0
+    _maxHealth: 2
     _maxMana: 0
     _isPlayerControlled: 1
     _minDamage: 5
     _maxDamage: 8
-  _enemyUnits:
-  - _unitName: Goblin A
-    _maxHealth: 0
-    _maxMana: 0
-    _isPlayerControlled: 0
-    _minDamage: 1
-    _maxDamage: 5
-  - _unitName: Goblin B
-    _maxHealth: 0
-    _maxMana: 0
-    _isPlayerControlled: 0
-    _minDamage: 2
-    _maxDamage: 7
   _allyPrefab: {fileID: 1090580327573074848, guid: 244d11338ab2af64e9c8a5b1651ed1ac, type: 3}
-  _enemyPrefab: {fileID: 5719079580642049457, guid: 72dfd484e2771de4dbf8d817d9c55501, type: 3}
+  _combatArea: {fileID: 2091264224}
   _allyArea: {fileID: 313503026}
   _enemyArea: {fileID: 2115770430}
   _unitSpacing: {x: 1.5, y: 0}
@@ -1275,7 +1262,7 @@ Transform:
   m_GameObject: {fileID: 1215401465}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.001298, y: 0.62142754, z: 0}
+  m_LocalPosition: {x: -16.35, y: 0.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1322,7 +1309,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 857a36a2abfd0d94fa0f55569a7302a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 0
+  _speed: 2
 --- !u!1 &1309589750
 GameObject:
   m_ObjectHideFlags: 0
@@ -1526,7 +1513,7 @@ Transform:
   m_GameObject: {fileID: 1508725174}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.81, y: -0.43, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.67, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1639,7 +1626,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1536485894
 Transform:
   m_ObjectHideFlags: 0
@@ -1656,9 +1643,6 @@ Transform:
   - {fileID: 1309589754}
   - {fileID: 2086043274}
   - {fileID: 2091264224}
-  - {fileID: 313503026}
-  - {fileID: 2115770430}
-  - {fileID: 16840465}
   - {fileID: 443194378}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1809,6 +1793,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d206a4056ea63f488ec134db25ac074, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _units:
+  - {fileID: 11400000, guid: 4f2a70873e88a7a49a90890afda9eef2, type: 2}
+  - {fileID: 11400000, guid: 85c3157b1b7b2ff4e82e509f7d57bf80, type: 2}
+  - {fileID: 11400000, guid: 4f2a70873e88a7a49a90890afda9eef2, type: 2}
 --- !u!1 &1812890228
 GameObject:
   m_ObjectHideFlags: 0
@@ -5313,7 +5301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2091264224
 Transform:
   m_ObjectHideFlags: 0
@@ -5323,10 +5311,13 @@ Transform:
   m_GameObject: {fileID: 2091264223}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.325526, y: 0.50581163, z: -0.03944129}
+  m_LocalPosition: {x: 45.77, y: 15.77, z: -0.03944129}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 16840465}
+  - {fileID: 313503026}
+  - {fileID: 2115770430}
   m_Father: {fileID: 1536485894}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2115770429
@@ -5354,11 +5345,11 @@ Transform:
   m_GameObject: {fileID: 2115770429}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.344474, y: 2.2058117, z: -0.03944129}
+  m_LocalPosition: {x: -3.67, y: 1.7, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1536485894}
+  m_Father: {fileID: 2091264224}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2135553262
 GameObject:

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class CombatSystem : MonoBehaviour
+public class CombatSystem : ProviderBehaviour
 {
     [SerializeField]
     private CombatGUI _combatGUI;
@@ -10,14 +10,13 @@ public class CombatSystem : MonoBehaviour
     // This should be a temporary measure for testing some basic functionality.
     [SerializeField]
     private List<CombatUnit> _allyUnits = new();
-    [SerializeField]
     private List<CombatUnit> _enemyUnits = new();
-     
-    // this is all very crude.
+
     [SerializeField]
     private GameObject _allyPrefab;
     [SerializeField]
-    private GameObject _enemyPrefab;
+    private Transform _combatArea;
+    // this is all very crude.
     [SerializeField]
     private Transform _allyArea;
     [SerializeField]
@@ -27,10 +26,9 @@ public class CombatSystem : MonoBehaviour
 
     private List<CombatUnit> _combatOrder;
 
-    // for testing stuff.
-    private void Start()
+    protected override bool Register()
     {
-
+        return DependencyService.Register(this);
     }
 
     /// <summary>
@@ -53,7 +51,7 @@ public class CombatSystem : MonoBehaviour
             else
             {
                 countByName[ed.UnitName] = 1;
-                instancesByName[ed.UnitName]++;
+                instancesByName[ed.UnitName] = 0;
             }
         }
         var iter = 0;
@@ -73,54 +71,36 @@ public class CombatSystem : MonoBehaviour
 
     }
 
+    public void Engage()
+    {
+        // bla bla setup.
+        _combatGUI.gameObject.SetActive(true);
+        //_allyArea.gameObject.SetActive(true);
+        //_enemyArea.gameObject.SetActive(true);
+        _combatArea.gameObject.SetActive(true);
+
+        var pos = _combatArea.position;
+        pos.z = -100;
+        Camera.main.transform.position = pos;
+
+        StartCombatAsync();
+    }
+
     private async void StartCombatAsync()
     {
-        //var options = new string[] { "hello", "world", "this", "is", "a", "test", "lmao" };
-        //var selectedIndex = await _combatGUI.SelectActionAsync(options);
-        //await _combatGUI.ShowDismissableTextAsync($"Selected {options[selectedIndex]}!");
-        //await Awaitable.NextFrameAsync();
-
-        //var advOptions = new TempTest[] 
-        //{ 
-        //    new("Hello", "This is a thing now. Yeah wahoo."),
-        //    new("Two", "Two"),
-        //    new("Three", "Three"),
-        //    new("Four", "Four"),
-        //    new("Five", "5"),
-        //    new("6", "6"),
-        //    new("7", "7"),
-        //    new("8", "8"),
-        //    new("9", "9"),
-        //    new("10", "10"),
-        //    new("11", "11"),
-        //    new("12", "12"),
-        //    new("13", "13"),
-        //    new("Goodbye", "This is other text instead of whatever was here before...") 
-        //};
-        //selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions);
-        //await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions[selectedIndex].Name}");
-        //await Awaitable.NextFrameAsync();
-        ////again with fewer options
-        //var advOptions2 = new TempTest[]
-        //{
-        //    new("Hello", "This is a thing now. Yeah wahoo."),
-        //    new("Two", "Two"),
-        //    new("Goodbye", "This is other text instead of whatever was here before...")
-        //};
-        //selectedIndex = await _combatGUI.SelectDescriptiveAsync(advOptions2);
-        //await _combatGUI.ShowDismissableTextAsync($"Selected {advOptions2[selectedIndex].Name}");
-        await Awaitable.NextFrameAsync();
-
         // TODO: 
 
         // combat test.
         _combatOrder = new();
         _combatOrder.AddRange(_allyUnits);
         _combatOrder.AddRange(_enemyUnits);
+
+        _allyArea.DestroyChildren();
         for (int i = 0; i < _allyUnits.Count; i++)
             Instantiate(_allyPrefab, _allyArea).transform.localPosition = _unitSpacing * i;
-        for (int i = 0; i < _allyUnits.Count; i++)
-            Instantiate(_enemyPrefab, _enemyArea).transform.localPosition = _unitSpacing * i;
+
+        //for (int i = 0; i < _enemyUnits.Count; i++)
+        //    Instantiate(_enemyPrefab, _enemyArea).transform.localPosition = _unitSpacing * i;
         // randomize order for now.
         for (int i = 0; i < _combatOrder.Count * 2; i++)
         {
@@ -196,6 +176,11 @@ public class CombatSystem : MonoBehaviour
         }
         instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(false);
         return units[selectedIndex];
+    }
+
+    public override void Dispose()
+    {
+        throw new System.NotImplementedException();
     }
 
     class TempTest : INameAndDescription
