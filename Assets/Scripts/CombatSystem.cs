@@ -24,6 +24,11 @@ public class CombatSystem : ProviderBehaviour
     [SerializeField]
     private Vector2 _unitSpacing;
 
+    [SerializeField]
+    private BlackScreenTransitioner _screenTransitioner;
+    [SerializeField]
+    private float _screenTransitionDuration = 2f;
+
     private List<CombatUnit> _combatOrder;
 
     private Vector3 _oldCameraPosition;
@@ -75,6 +80,14 @@ public class CombatSystem : ProviderBehaviour
 
     public void Engage()
     {
+        SetupCombatAsync();
+    }
+
+    private async void SetupCombatAsync()
+    {
+        _screenTransitioner.Trigger(_screenTransitionDuration);
+        await Awaitable.WaitForSecondsAsync(_screenTransitionDuration + 0.2f);
+        _screenTransitioner.End();
         // bla bla setup.
         _combatGUI.gameObject.SetActive(true);
         //_allyArea.gameObject.SetActive(true);
@@ -95,6 +108,8 @@ public class CombatSystem : ProviderBehaviour
     private async void StartCombatAsync()
     {
         // TODO: let units die and remove them from combat.
+
+        await _combatGUI.ShowDismissableTextAsync("You've been attacked!");
 
         // combat test.
         _combatOrder = new();
