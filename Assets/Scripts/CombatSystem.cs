@@ -27,6 +27,8 @@ public class CombatSystem : ProviderBehaviour
     [SerializeField]
     private BlackScreenTransitioner _screenTransitioner;
     [SerializeField]
+    private ScreenMeltTransition _screenTransitioner1;
+    [SerializeField]
     private float _screenTransitionDuration = 2f;
 
     private List<CombatUnit> _combatOrder;
@@ -85,9 +87,10 @@ public class CombatSystem : ProviderBehaviour
 
     private async void SetupCombatAsync()
     {
-        _screenTransitioner.Trigger(_screenTransitionDuration);
-        await Awaitable.WaitForSecondsAsync(_screenTransitionDuration + 0.2f);
-        _screenTransitioner.End();
+        _screenTransitioner1.Trigger();
+        //_screenTransitioner.Trigger(_screenTransitionDuration);
+        //await Awaitable.WaitForSecondsAsync(_screenTransitionDuration + 0.2f);
+        //_screenTransitioner.End();
         // bla bla setup.
         _combatGUI.gameObject.SetActive(true);
         //_allyArea.gameObject.SetActive(true);
