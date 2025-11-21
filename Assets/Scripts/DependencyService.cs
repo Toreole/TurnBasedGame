@@ -2,34 +2,57 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 
 // TODO: would it be useful to have a list of fallback prefabs for specific 
 // necessary components?
 internal static class DependencyService
 {
-    private static Dictionary<Type, ProviderBehaviour> dependencies = new ();
+    // idk it feels like this shouldnt be limited to ProviderBehaviour
+    private static readonly Dictionary<Type, ProviderBehaviour> dependencies = new ();
 
+    // generic syntax alternative
     public static bool Register<T>(T obj, bool replace = false) where T : ProviderBehaviour
     {
+        return Register(obj, typeof(T), replace);
+    }
+
+    /// <summary>
+    /// Register a Provider with the dependency service.
+    /// </summary>
+    /// <param name="obj">concrete service to register</param>
+    /// <param name="asType">what type to register it as</param>
+    /// <param name="replace"></param>
+    /// <returns></returns>
+    public static bool Register(ProviderBehaviour obj, Type asType, bool replace = false)
+    {
+        if(!asType.IsAssignableFrom(obj.GetType()))
+        {
+            throw new ArgumentException(
+                $"Provided object {obj.name}#{obj.GetInstanceID()} " +
+                $"of type {obj.GetType().FullName} is not assignable " +
+                $"to registering type {asType.FullName}"
+            );
+        }
         ProviderBehaviour existing = null;
-        if (dependencies.TryGetValue(typeof(T), out existing) && existing != null)
+        if (dependencies.TryGetValue(asType, out existing) && existing != null)
         {
             // TODO: This currently leads to undefined behaviour
             // when a dependency is replaced, while there are still
             // objects that hold a reference to the old one.
             // There should be some form of event to notify dependants of an update.
-            if (replace) 
+            if (replace)
             {
                 existing.Dispose();
-                dependencies[typeof(T)] = obj;
-                Debug.Log($"Replaced registered Object for Type {typeof(T).FullName}");
+                dependencies[asType] = obj;
+                Debug.Log($"Replaced registered Object for Type {asType.FullName}");
                 return true;
             }
             return false;
-        } 
-        dependencies[typeof(T)] = obj;
-        Debug.Log($"Registered Object for Type {typeof(T).FullName}");
+        }
+        dependencies[asType] = obj;
+        Debug.Log($"Registered Object for Type {asType.FullName}");
         return true;
     }
 
@@ -108,7 +131,8 @@ internal static class DependencyService
 
     private static void FailedDependencyLogError(UnityEngine.Object obj, Type type, InjectedAttribute att)
     {
-        var logMessage = $"Object {obj.name}#{obj.GetInstanceID()} depends on {type.FullName}, which was not registered.";
+        var logMessage = $"Object {obj.name}#{obj.GetInstanceID()} depends on {type.FullName}, which was not registered. " +
+            "Make sure the dependency exists and is enabled.";
         if (att.IsFatal)
             Debug.LogError(logMessage);
         else

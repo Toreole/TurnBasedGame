@@ -22,6 +22,9 @@ public class CombatUnit : INameAndDescription
         _isPlayerControlled = isPlayerControlled;
         _minDamage = minDamage;
         _maxDamage = maxDamage;
+
+        _currentHealth = _maxHealth;
+        _currentMana = _maxMana;
     }
 
     public CombatUnit(string unitName, UnitDefinition def)
@@ -54,6 +57,7 @@ public class CombatUnit : INameAndDescription
 
     // TODO
     private float _currentHealth;
+    private float _currentMana;
 
 
     public float GetAttackDamage()
@@ -63,9 +67,16 @@ public class CombatUnit : INameAndDescription
 
     private void Damage(float damage)
     {
-        // TODO
+        _currentHealth -= damage;
+        if (_currentHealth < 0)
+        {
+            // OVERKILL hahahahaha
+
+            // TODO: do something on death.
+        }
     }
 
+    // TODO: i feel like this should not be in here
     public async Awaitable DoTurnAsync(CombatSystem combat, CombatGUI gui)
     {
         if (_isPlayerControlled)

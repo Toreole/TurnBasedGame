@@ -42,7 +42,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Duration: 1
-    - _StartTime: 40.887638
+    - _StartTime: 5.399998
     - _Variation: 1
     m_Colors: []
   m_BuildTextureStacks: []

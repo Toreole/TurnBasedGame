@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CombatSystem : ProviderBehaviour
 {
-    [SerializeField]
-    private CombatGUI _combatGUI;
+    [Injected(isFatal: true)]
+    private readonly CombatGUI _combatGUI;
 
     // This should be a temporary measure for testing some basic functionality.
     [SerializeField]
@@ -87,14 +86,17 @@ public class CombatSystem : ProviderBehaviour
 
     private async void SetupCombatAsync()
     {
+        // transitions
         _screenTransitioner1.Trigger();
+        await Awaitable.NextFrameAsync();
         //_screenTransitioner.Trigger(_screenTransitionDuration);
         //await Awaitable.WaitForSecondsAsync(_screenTransitionDuration + 0.2f);
         //_screenTransitioner.End();
+
         // bla bla setup.
-        _combatGUI.gameObject.SetActive(true);
         //_allyArea.gameObject.SetActive(true);
         //_enemyArea.gameObject.SetActive(true);
+        _combatGUI.Activate();
         _combatArea.gameObject.SetActive(true);
 
         _oldCameraPosition = Camera.main.transform.position;
@@ -105,10 +107,10 @@ public class CombatSystem : ProviderBehaviour
         var player = DependencyService.RequestDependency<PlayerMovement>();
         player.enabled = false;
 
-        StartCombatAsync();
+        DoCombatAsync();
     }
 
-    private async void StartCombatAsync()
+    private async void DoCombatAsync()
     {
         // TODO: let units die and remove them from combat.
 
@@ -143,6 +145,18 @@ public class CombatSystem : ProviderBehaviour
                 await Awaitable.NextFrameAsync();
             }
         }
+        EndCombatAsync();
+    }
+
+    private async void EndCombatAsync()
+    {
+        await _combatGUI.ShowDismissableTextAsync("You win!");
+
+        await Awaitable.NextFrameAsync();
+        Camera.main.transform.position = _oldCameraPosition ;
+
+        var player = DependencyService.RequestDependency<PlayerMovement>();
+        player.enabled = true;
     }
 
     // NONE OF THESE ARE SAFE

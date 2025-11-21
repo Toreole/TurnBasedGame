@@ -36,6 +36,14 @@ namespace Assets.Scripts
         [SerializeField]
         private GridLayoutGroup _advSelectionGrid;
 
+        [SerializeField]
+        private CanvasGroup _group;
+
+        protected override bool Register()
+        {
+            return DependencyService.Register<CombatGUI>(this);
+        }
+
         public override async Awaitable<int> SelectActionAsync(string[] actions)
         {
             var sectionCount = Mathf.CeilToInt(actions.Length / (float)_optionsPerSection);
@@ -185,6 +193,25 @@ namespace Assets.Scripts
             //disable ui elements again
             _textPanel.SetActive(false);
             _textPanelConfirm.SetActive(false);
+        }
+
+        public override void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Activate()
+        {
+            _group.alpha = 1;
+            _group.blocksRaycasts = true;
+            _group.interactable = true;
+        }
+
+        public override void Deactivate()
+        {
+            _group.alpha = 0;
+            _group.blocksRaycasts = false;
+            _group.interactable = false;
         }
     }
 }

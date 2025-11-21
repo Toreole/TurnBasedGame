@@ -20,10 +20,10 @@ public class ScreenMeltTransition : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            Trigger();
-        }
+        //if (Input.GetKeyDown(KeyCode.Return))
+        //{
+        //    Trigger();
+        //}
         if (Time.time - _lastStart > 5)
             _effect.SetActive(false);
     }

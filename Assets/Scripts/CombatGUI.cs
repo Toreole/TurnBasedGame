@@ -6,7 +6,7 @@
 /// Can technically be used for more than just Combat.
 /// </summary>
 // loose coupling, you know how it is.
-public abstract class CombatGUI : MonoBehaviour
+public abstract class CombatGUI : ProviderBehaviour
 {
     /// <summary>
     /// Show a dismissable text on the GUI. 
@@ -29,5 +29,7 @@ public abstract class CombatGUI : MonoBehaviour
     /// <param name="items">List of options.</param>
     /// <returns>index of selected option.</returns>
     public abstract Awaitable<int> SelectDescriptiveAsync(INameAndDescription[] items);
-}
 
+    public abstract void Activate();
+    public abstract void Deactivate();
+}
