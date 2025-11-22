@@ -3,7 +3,7 @@ using UnityEngine;
 public class CombatTrigger : DependentBehaviour
 {
     [SerializeField]
-    private UnitDefinition[] _units = null;
+    private EncounterDefinition _encounter = null;
 
     // unintuitive, but the dependency service can still fill this field
     // with the correctly value despite the readonly declaration.
@@ -15,9 +15,7 @@ public class CombatTrigger : DependentBehaviour
         Debug.Log("Collision");
         if (collision.rigidbody.CompareTag("Player"))
         {
-            // TODO: trigger CombatSystem with units defined above.
-            _combatSystem.SetupEnemies(_units);
-            _combatSystem.Engage();
+            _combatSystem.Engage(_encounter);
         }
     }
 }

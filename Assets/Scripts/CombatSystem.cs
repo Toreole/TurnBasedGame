@@ -44,7 +44,7 @@ public class CombatSystem : ProviderBehaviour
     /// Arrays or Lists preferred for simplicity i guess.
     /// </summary>
     /// <param name="enemyDefs"></param>
-    public void SetupEnemies(IEnumerable<UnitDefinition> enemyDefs)
+    private void SetupEnemies(IEnumerable<UnitDefinition> enemyDefs)
     {
         _enemyArea.DestroyChildren();
         _enemyUnits.Clear();
@@ -79,8 +79,9 @@ public class CombatSystem : ProviderBehaviour
 
     }
 
-    public void Engage()
+    public void Engage(EncounterDefinition encounter)
     {
+        SetupEnemies(encounter.Enemies);
         SetupCombatAsync();
     }
 
@@ -143,8 +144,16 @@ public class CombatSystem : ProviderBehaviour
                 await _combatOrder[i].DoTurnAsync(this, _combatGUI);
                 // always also wait for at least one additional frame between turns to avoid key inputs mixing into both.
                 await Awaitable.NextFrameAsync();
+
+                //TODO: how do i detect whether a unit has died?
+                // on damage -> health < 0 would be easiest, but the combat system needs to know about it, and then also correctly
+                // handle removing the unit from:
+                // - the combat order
+                // - from the ally / enemy units lists
+                // - and also remove the gameobject from the respective areas in the world.
             }
         }
+        // rewards and stuff would be given out in here i suppose.
         EndCombatAsync();
     }
 

@@ -6,6 +6,10 @@
 /// Can technically be used for more than just Combat.
 /// </summary>
 // loose coupling, you know how it is.
+// CombatGUI on its own could technically just as well be an interface at this point, since we dont serialize references to it directly anyway,
+// and instead just fill injected fields via the DependencyService
+
+// This is not really specific to Combat tbh.
 public abstract class CombatGUI : ProviderBehaviour
 {
     /// <summary>
