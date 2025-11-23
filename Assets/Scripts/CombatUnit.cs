@@ -12,25 +12,23 @@ public class CombatUnit : INameAndDescription
     {
 
     }
+
     // all of these are taken from UnitDefinition is the idea.
     // about the name im not so sure.
-    public CombatUnit(string unitName, float maxHealth, float maxMana, bool isPlayerControlled, float minDamage, float maxDamage)
+    public CombatUnit(string unitName, UnitDefinition def)
     {
+
         _unitName = unitName;
-        _maxHealth = maxHealth;
-        _maxMana = maxMana;
-        _isPlayerControlled = isPlayerControlled;
-        _minDamage = minDamage;
-        _maxDamage = maxDamage;
+        _maxHealth = def.MaxHealth;
+        _maxMana = def.MaxMana;
+        _isPlayerControlled = def.IsPlayerControlled;
+        _minDamage = def.MinDamage;
+        _maxDamage = def.MaxDamage;
 
         _currentHealth = _maxHealth;
         _currentMana = _maxMana;
-    }
 
-    public CombatUnit(string unitName, UnitDefinition def)
-        : this(unitName, def.MaxHealth, def.MaxMana, def.IsPlayerControlled, def.MinDamage, def.MaxDamage)
-    {
-
+        this.UnitDefinition = def;
     }
 
     [SerializeField]
@@ -51,6 +49,8 @@ public class CombatUnit : INameAndDescription
     //[SerializeField]
     //private Ability[] m_abilities;
 
+    public UnitDefinition UnitDefinition { get; private set; }
+
     public string Name => _unitName;
 
     public string Description => "";
@@ -59,6 +59,8 @@ public class CombatUnit : INameAndDescription
     private float _currentHealth;
     private float _currentMana;
 
+    public float CurrentHealth => _currentHealth;
+    public float MaxHealth => _maxHealth;
 
     public float GetAttackDamage()
     {

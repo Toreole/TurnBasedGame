@@ -542,19 +542,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249afa691b8347f4ea2b316d9d354690, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _allyUnits:
-  - _unitName: Ally A
-    _maxHealth: 2
-    _maxMana: 0
-    _isPlayerControlled: 1
-    _minDamage: 2
-    _maxDamage: 12
-  - _unitName: Ally B
-    _maxHealth: 2
-    _maxMana: 0
-    _isPlayerControlled: 1
-    _minDamage: 5
-    _maxDamage: 8
+  _debugAllies:
+  - {fileID: 11400000, guid: 14c65e3c57be163419307522fac9a7be, type: 2}
+  - {fileID: 11400000, guid: ff841371d8b980844a5eb1fb1c5b17d0, type: 2}
   _allyPrefab: {fileID: 1090580327573074848, guid: 244d11338ab2af64e9c8a5b1651ed1ac, type: 3}
   _combatArea: {fileID: 2091264224}
   _allyArea: {fileID: 313503026}

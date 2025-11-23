@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CombatSystem : ProviderBehaviour
@@ -8,8 +9,7 @@ public class CombatSystem : ProviderBehaviour
 
     // This should be a temporary measure for testing some basic functionality.
     [SerializeField]
-    private List<CombatUnit> _allyUnits = new();
-    private List<CombatUnit> _enemyUnits = new();
+    private List<UnitDefinition> _debugAllies;
 
     [SerializeField]
     private GameObject _allyPrefab;
@@ -30,6 +30,9 @@ public class CombatSystem : ProviderBehaviour
     [SerializeField]
     private float _screenTransitionDuration = 2f;
 
+
+    private List<CombatUnit> _allyUnits = new();
+    private List<CombatUnit> _enemyUnits = new();
     private List<CombatUnit> _combatOrder;
 
     private Vector3 _oldCameraPosition;
@@ -75,8 +78,6 @@ public class CombatSystem : ProviderBehaviour
             Instantiate(ed.Prefab, _enemyArea).transform.localPosition = _unitSpacing * iter;
             iter++;
         }
-
-
     }
 
     public void Engage(EncounterDefinition encounter)
@@ -118,6 +119,7 @@ public class CombatSystem : ProviderBehaviour
         await _combatGUI.ShowDismissableTextAsync("You've been attacked!");
 
         // combat test.
+        _allyUnits = _debugAllies.Select(x => new CombatUnit(x.UnitName, x)).ToList();
         _combatOrder = new();
         _combatOrder.AddRange(_allyUnits);
         _combatOrder.AddRange(_enemyUnits);
@@ -136,7 +138,8 @@ public class CombatSystem : ProviderBehaviour
             (_combatOrder[a], _combatOrder[b]) = (_combatOrder[b], _combatOrder[a]);
         }
         // now do each units turn after each other.
-        while (_combatOrder.Count > 0) // while combat is still active
+        bool activeCombat = true;
+        while (activeCombat)
         {
             // TODO: this would not allow units to be taken out of combat
             for (int i = 0; i < _combatOrder.Count; i++)
@@ -145,6 +148,39 @@ public class CombatSystem : ProviderBehaviour
                 // always also wait for at least one additional frame between turns to avoid key inputs mixing into both.
                 await Awaitable.NextFrameAsync();
 
+                for (int j = _combatOrder.Count - 1; j >= 0; j--)
+                {
+                    var unit = _combatOrder[j];
+                    if (unit.CurrentHealth <= 0)
+                    {
+                        if (j <= i)
+                        {
+                            i--;
+                        }
+                        _combatOrder.RemoveAt(j);
+                        // remove from order and from sets
+                        if (_allyUnits.Contains(unit))
+                        {
+                            var index = _allyUnits.IndexOf(unit);
+                            Destroy(_allyArea.GetChild(index).gameObject);
+                            _allyUnits.RemoveAt(index);
+                        }
+                        else if (_enemyUnits.Contains(unit))
+                        {
+                            var index = _enemyUnits.IndexOf(unit);
+                            Destroy(_enemyArea.GetChild(index).gameObject);
+                            _enemyUnits.RemoveAt(index);
+
+                        }
+
+                        await _combatGUI.ShowDismissableTextAsync($"{unit.Name} has died.");
+                        await Awaitable.NextFrameAsync();
+                    }
+                }
+
+                activeCombat = _allyUnits.Count > 0 && _enemyUnits.Count > 0;
+                if (!activeCombat)
+                    break;
                 //TODO: how do i detect whether a unit has died?
                 // on damage -> health < 0 would be easiest, but the combat system needs to know about it, and then also correctly
                 // handle removing the unit from:
@@ -160,7 +196,7 @@ public class CombatSystem : ProviderBehaviour
     private async void EndCombatAsync()
     {
         await _combatGUI.ShowDismissableTextAsync("You win!");
-
+        _combatGUI.Deactivate();
         await Awaitable.NextFrameAsync();
         Camera.main.transform.position = _oldCameraPosition ;
 
