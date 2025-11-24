@@ -17,6 +17,10 @@ public class PlayerMovement : ProviderBehaviour
     {
         return DependencyService.Register(this);
     }
+    protected override void Unregister()
+    {
+        DependencyService.Unregister(this);
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

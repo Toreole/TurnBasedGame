@@ -43,6 +43,10 @@ namespace Assets.Scripts
         {
             return DependencyService.Register<CombatGUI>(this);
         }
+        protected override void Unregister()
+        {
+            DependencyService.Unregister<CombatGUI>(this);
+        }
 
         public override async Awaitable<int> SelectActionAsync(string[] actions)
         {

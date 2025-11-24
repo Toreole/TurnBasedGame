@@ -1,6 +1,8 @@
+using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
-public class ScreenMeltTransition : MonoBehaviour
+public class ScreenMeltTransition : ScreenTransition
 {
     [SerializeField]
     private Material _mat;
@@ -28,8 +30,9 @@ public class ScreenMeltTransition : MonoBehaviour
             _effect.SetActive(false);
     }
 
-    public void Trigger()
+    public override async Task TriggerAsync(Action moveCamera)
     {
+
         _renderTexture.width = Screen.width;
         _renderTexture.height = Screen.height;
         _camera.targetTexture = _renderTexture;
@@ -37,5 +40,7 @@ public class ScreenMeltTransition : MonoBehaviour
         _mat.SetFloat(_startTimePropName, Time.time);
         _lastStart = Time.time;
         _effect.SetActive(true);
+        await Awaitable.NextFrameAsync();
+        moveCamera();
     }
 }

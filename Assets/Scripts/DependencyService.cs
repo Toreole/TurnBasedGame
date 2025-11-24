@@ -61,9 +61,9 @@ internal static class DependencyService
     /// <typeparam name="T"></typeparam>
     /// <param name="obj"></param>
     /// <returns></returns>
-    public static bool Unregister(ProviderBehaviour obj)
+    public static bool Unregister<T>(T obj) where T : ProviderBehaviour
     {
-        var type = obj.GetType();
+        var type = typeof(T);
         if (dependencies.TryGetValue(type, out var registered) && registered == obj)
         {
             dependencies.Remove(type);

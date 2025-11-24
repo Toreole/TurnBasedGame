@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 // i would really like a IScreenTransition interface, but then you would not be able to
 // serialize a reference to it with unitys default inspector and all that.
 // using OdinInspector could help with that, but i dont really care enough rn.
-public class BlackScreenTransitioner : MonoBehaviour
+public class BlackScreenTransitioner : ScreenTransition
 {
     [SerializeField]
     private FullScreenPassRendererFeature _transitionEffect;
@@ -33,4 +34,15 @@ public class BlackScreenTransitioner : MonoBehaviour
         _transitionEffect.SetActive(false);
     }
 
+    public override async Task TriggerAsync(System.Action moveCamera)
+    {
+        var tex = _fadeTextures[Random.Range(0, _fadeTextures.Length)];
+        _fadeMaterial.SetTexture(_texturePropertyName, tex);
+        _fadeMaterial.SetFloat(_durationPropertyName, 2f);
+        _fadeMaterial.SetFloat(_timePropertyName, Time.time);
+        _transitionEffect.SetActive(true);
+        await Awaitable.WaitForSecondsAsync(2f);
+        moveCamera();
+        _transitionEffect.SetActive(false);
+    }
 }

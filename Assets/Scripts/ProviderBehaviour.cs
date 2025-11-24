@@ -16,7 +16,7 @@ public abstract class ProviderBehaviour : DependentBehaviour
     {
         if(!Register())
         {
-            // should this gameObject / script just be destroyed instead?
+        // should this gameObject / script just be destroyed instead?
             gameObject.SetActive(false);
         }
     }
@@ -25,6 +25,7 @@ public abstract class ProviderBehaviour : DependentBehaviour
     /// Body should be `return DependencyService.Register(this)`
     /// </summary>
     protected abstract bool Register();
+    protected abstract void Unregister();
     /// <summary>
     /// Clean up used resources, created objects, etc.
     /// </summary>
@@ -33,7 +34,7 @@ public abstract class ProviderBehaviour : DependentBehaviour
 
     protected virtual void OnDestroy()
     {
-        DependencyService.Unregister(this);
+        Unregister();
     }
 
 }

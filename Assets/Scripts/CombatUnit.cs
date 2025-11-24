@@ -5,6 +5,10 @@ using UnityEngine;
 // and for that even System.Random is preferable over this.
 using Random = UnityEngine.Random;
 
+// TODO:
+// Computer controller Units need some parameters for how the unit should behave.
+// stuff like preferred abilities, aggression, strategy / role etc, which affect what
+// the unit will end up doing.
 [Serializable]
 public class CombatUnit : INameAndDescription
 {

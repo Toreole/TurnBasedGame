@@ -24,9 +24,7 @@ public class CombatSystem : ProviderBehaviour
     private Vector2 _unitSpacing;
 
     [SerializeField]
-    private BlackScreenTransitioner _screenTransitioner;
-    [SerializeField]
-    private ScreenMeltTransition _screenTransitioner1;
+    private ScreenTransition _screenTransitioner;
     [SerializeField]
     private float _screenTransitionDuration = 2f;
 
@@ -40,6 +38,10 @@ public class CombatSystem : ProviderBehaviour
     protected override bool Register()
     {
         return DependencyService.Register(this);
+    }
+    protected override void Unregister()
+    {
+        DependencyService.Unregister(this);
     }
 
     /// <summary>
@@ -89,12 +91,11 @@ public class CombatSystem : ProviderBehaviour
     private async void SetupCombatAsync()
     {
         // transitions
-        _screenTransitioner1.Trigger();
-        await Awaitable.NextFrameAsync();
-        //_screenTransitioner.Trigger(_screenTransitionDuration);
-        //await Awaitable.WaitForSecondsAsync(_screenTransitionDuration + 0.2f);
-        //_screenTransitioner.End();
+        await _screenTransitioner.TriggerAsync( DoCombatAsync );
+    }
 
+    private async void DoCombatAsync()
+    {
         // bla bla setup.
         //_allyArea.gameObject.SetActive(true);
         //_enemyArea.gameObject.SetActive(true);
@@ -108,12 +109,6 @@ public class CombatSystem : ProviderBehaviour
 
         var player = DependencyService.RequestDependency<PlayerMovement>();
         player.enabled = false;
-
-        DoCombatAsync();
-    }
-
-    private async void DoCombatAsync()
-    {
         // TODO: let units die and remove them from combat.
 
         await _combatGUI.ShowDismissableTextAsync("You've been attacked!");
@@ -158,21 +153,7 @@ public class CombatSystem : ProviderBehaviour
                             i--;
                         }
                         _combatOrder.RemoveAt(j);
-                        // remove from order and from sets
-                        if (_allyUnits.Contains(unit))
-                        {
-                            var index = _allyUnits.IndexOf(unit);
-                            Destroy(_allyArea.GetChild(index).gameObject);
-                            _allyUnits.RemoveAt(index);
-                        }
-                        else if (_enemyUnits.Contains(unit))
-                        {
-                            var index = _enemyUnits.IndexOf(unit);
-                            Destroy(_enemyArea.GetChild(index).gameObject);
-                            _enemyUnits.RemoveAt(index);
-
-                        }
-
+                        RemoveUnitFromCombat(unit);
                         await _combatGUI.ShowDismissableTextAsync($"{unit.Name} has died.");
                         await Awaitable.NextFrameAsync();
                     }
@@ -191,6 +172,23 @@ public class CombatSystem : ProviderBehaviour
         }
         // rewards and stuff would be given out in here i suppose.
         EndCombatAsync();
+    }
+
+    private void RemoveUnitFromCombat(CombatUnit unit)
+    {
+        // remove from order and from sets
+        if (_allyUnits.Contains(unit))
+        {
+            var index = _allyUnits.IndexOf(unit);
+            Destroy(_allyArea.GetChild(index).gameObject);
+            _allyUnits.RemoveAt(index);
+        }
+        else if (_enemyUnits.Contains(unit))
+        {
+            var index = _enemyUnits.IndexOf(unit);
+            Destroy(_enemyArea.GetChild(index).gameObject);
+            _enemyUnits.RemoveAt(index);
+        }
     }
 
     private async void EndCombatAsync()
