@@ -550,8 +550,7 @@ MonoBehaviour:
   _allyArea: {fileID: 313503026}
   _enemyArea: {fileID: 2115770430}
   _unitSpacing: {x: 1.5, y: 0}
-  _screenTransitioner: {fileID: 1819500357}
-  _screenTransitioner1: {fileID: 71077154}
+  _screenTransitioner: {fileID: 71077154}
   _screenTransitionDuration: 2
 --- !u!4 &443194378
 Transform:

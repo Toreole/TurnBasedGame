@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+// temporary measure
+using Random = UnityEngine.Random;
 
 public class CombatSystem : ProviderBehaviour
 {
@@ -11,8 +14,6 @@ public class CombatSystem : ProviderBehaviour
     [SerializeField]
     private List<UnitDefinition> _debugAllies;
 
-    [SerializeField]
-    private GameObject _allyPrefab;
     [SerializeField]
     private Transform _combatArea;
     // this is all very crude.
@@ -90,8 +91,19 @@ public class CombatSystem : ProviderBehaviour
 
     private async void SetupCombatAsync()
     {
+        var player = DependencyService.RequestDependency<PlayerMovement>();
+        player.enabled = false;
         // transitions
-        await _screenTransitioner.TriggerAsync( DoCombatAsync );
+        await _screenTransitioner.TriggerAsync(SetupCamera);
+        DoCombatAsync();
+    }
+
+    private void SetupCamera()
+    {
+        _oldCameraPosition = Camera.main.transform.position;
+        var pos = _combatArea.position;
+        pos.z = -100;
+        Camera.main.transform.position = pos;
     }
 
     private async void DoCombatAsync()
@@ -102,14 +114,6 @@ public class CombatSystem : ProviderBehaviour
         _combatGUI.Activate();
         _combatArea.gameObject.SetActive(true);
 
-        _oldCameraPosition = Camera.main.transform.position;
-        var pos = _combatArea.position;
-        pos.z = -100;
-        Camera.main.transform.position = pos;
-
-        var player = DependencyService.RequestDependency<PlayerMovement>();
-        player.enabled = false;
-        // TODO: let units die and remove them from combat.
 
         await _combatGUI.ShowDismissableTextAsync("You've been attacked!");
 
@@ -121,17 +125,14 @@ public class CombatSystem : ProviderBehaviour
 
         _allyArea.DestroyChildren();
         for (int i = 0; i < _allyUnits.Count; i++)
-            Instantiate(_allyPrefab, _allyArea).transform.localPosition = _unitSpacing * i;
+            Instantiate(_debugAllies[i].Prefab, _allyArea).transform.localPosition = _unitSpacing * i;
 
         //for (int i = 0; i < _enemyUnits.Count; i++)
         //    Instantiate(_enemyPrefab, _enemyArea).transform.localPosition = _unitSpacing * i;
         // randomize order for now.
-        for (int i = 0; i < _combatOrder.Count * 2; i++)
-        {
-            var a = Random.Range(0, _combatOrder.Count);
-            var b = Random.Range(0, _combatOrder.Count);
-            (_combatOrder[a], _combatOrder[b]) = (_combatOrder[b], _combatOrder[a]);
-        }
+
+        ShuffleCombatOrder();
+
         // now do each units turn after each other.
         bool activeCombat = true;
         while (activeCombat)
@@ -172,6 +173,42 @@ public class CombatSystem : ProviderBehaviour
         }
         // rewards and stuff would be given out in here i suppose.
         EndCombatAsync();
+    }
+
+    private async void CombatLoop(EncounterDefinition encounter)
+    {
+        CombatState combatState = new(this);
+        combatState.Init(_debugAllies, encounter);
+
+        while (combatState.Status == CombatStatus.InProgress)
+        {
+            var unit = combatState.GetNextTurn();
+            if (unit == null)
+                throw new NullReferenceException("Expected unit");
+            await unit.DoTurnAsync(this, _combatGUI);
+        }
+        switch (combatState.Status)
+        {
+            case CombatStatus.PlayerWin:
+                await _combatGUI.ShowDismissableTextAsync("yippie you win");
+                break;
+            case CombatStatus.PlayerLose:
+                Debug.Log("Deadge");
+                break;
+            default:
+                Debug.LogError("yikes");
+                break;
+        }
+    }
+
+    private void ShuffleCombatOrder()
+    {
+        for (int i = 0; i < _combatOrder.Count * 2; i++)
+        {
+            var a = Random.Range(0, _combatOrder.Count);
+            var b = Random.Range(0, _combatOrder.Count);
+            (_combatOrder[a], _combatOrder[b]) = (_combatOrder[b], _combatOrder[a]);
+        }
     }
 
     private void RemoveUnitFromCombat(CombatUnit unit)
@@ -262,15 +299,5 @@ public class CombatSystem : ProviderBehaviour
     public override void Dispose()
     {
         throw new System.NotImplementedException();
-    }
-
-    class TempTest : INameAndDescription
-    {
-        public string Name { get; }
-        public string Description { get; }
-        public TempTest(string n, string d)
-        {
-            Name = n; Description = d;
-        }
     }
 }

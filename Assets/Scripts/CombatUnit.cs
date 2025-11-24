@@ -21,7 +21,6 @@ public class CombatUnit : INameAndDescription
     // about the name im not so sure.
     public CombatUnit(string unitName, UnitDefinition def)
     {
-
         _unitName = unitName;
         _maxHealth = def.MaxHealth;
         _maxMana = def.MaxMana;
@@ -66,6 +65,8 @@ public class CombatUnit : INameAndDescription
     public float CurrentHealth => _currentHealth;
     public float MaxHealth => _maxHealth;
 
+    internal event Action<CombatUnit> OnUnitDied;
+
     public float GetAttackDamage()
     {
         return Mathf.Lerp(_minDamage, _maxDamage, Random.value);
@@ -79,6 +80,7 @@ public class CombatUnit : INameAndDescription
             // OVERKILL hahahahaha
 
             // TODO: do something on death.
+            OnUnitDied(this);
         }
     }
 

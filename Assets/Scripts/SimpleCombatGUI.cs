@@ -97,7 +97,8 @@ namespace Assets.Scripts
                 {
                     options[oldSelection].SetActive(false);
                     options[selectionIndex].SetActive(true);
-                } else
+                } 
+                else
                 {
                     selectionIndex = oldSelection;
                 }

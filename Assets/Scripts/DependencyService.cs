@@ -34,8 +34,7 @@ internal static class DependencyService
                 $"to registering type {asType.FullName}"
             );
         }
-        ProviderBehaviour existing = null;
-        if (dependencies.TryGetValue(asType, out existing) && existing != null)
+        if (dependencies.TryGetValue(asType, out ProviderBehaviour existing) && existing != null)
         {
             // TODO: This currently leads to undefined behaviour
             // when a dependency is replaced, while there are still
