@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 // temporary measure
 using Random = UnityEngine.Random;
@@ -20,7 +21,11 @@ public class CombatSystem : ProviderBehaviour
     [SerializeField]
     private Transform _allyArea;
     [SerializeField]
+    private UnitLayout _allyLayout;
+    [SerializeField]
     private Transform _enemyArea;
+    [SerializeField]
+    private UnitLayout _enemyLayout;
     [SerializeField]
     private Vector2 _unitSpacing;
 
@@ -29,10 +34,8 @@ public class CombatSystem : ProviderBehaviour
     [SerializeField]
     private float _screenTransitionDuration = 2f;
 
-
-    private List<CombatUnit> _allyUnits = new();
-    private List<CombatUnit> _enemyUnits = new();
-    private List<CombatUnit> _combatOrder;
+    private EncounterDefinition _currentEncounter;
+    private CombatState _combatState;
 
     private Vector3 _oldCameraPosition;
 
@@ -45,47 +48,9 @@ public class CombatSystem : ProviderBehaviour
         DependencyService.Unregister(this);
     }
 
-    /// <summary>
-    /// Sets up enemies for combat based on any Enumerable of UnitDefinitions.
-    /// Arrays or Lists preferred for simplicity i guess.
-    /// </summary>
-    /// <param name="enemyDefs"></param>
-    private void SetupEnemies(IEnumerable<UnitDefinition> enemyDefs)
-    {
-        _enemyArea.DestroyChildren();
-        _enemyUnits.Clear();
-
-        // i feel like theres something better you can do here, but it will do.
-        var countByName = new Dictionary<string, int>();
-        var instancesByName = new Dictionary<string, int>();
-        foreach (var ed in enemyDefs)
-        {
-            if (countByName.ContainsKey(ed.UnitName))
-                countByName[ed.UnitName]++;
-            else
-            {
-                countByName[ed.UnitName] = 1;
-                instancesByName[ed.UnitName] = 0;
-            }
-        }
-        var iter = 0;
-        foreach (var ed in enemyDefs)
-        {
-            var unitName = ed.UnitName;
-            if (countByName[ed.UnitName] > 1)
-            {
-                char discriminator = (char)('A' + instancesByName[ed.UnitName]++);
-                unitName = $"{unitName} {discriminator}";
-            }
-            _enemyUnits.Add(new CombatUnit(unitName, ed));
-            Instantiate(ed.Prefab, _enemyArea).transform.localPosition = _unitSpacing * iter;
-            iter++;
-        }
-    }
-
     public void Engage(EncounterDefinition encounter)
     {
-        SetupEnemies(encounter.Enemies);
+        _currentEncounter = encounter;
         SetupCombatAsync();
     }
 
@@ -95,7 +60,7 @@ public class CombatSystem : ProviderBehaviour
         player.enabled = false;
         // transitions
         await _screenTransitioner.TriggerAsync(SetupCamera);
-        DoCombatAsync();
+        await DoCombatAsync();
     }
 
     private void SetupCamera()
@@ -106,7 +71,7 @@ public class CombatSystem : ProviderBehaviour
         Camera.main.transform.position = pos;
     }
 
-    private async void DoCombatAsync()
+    private async Awaitable DoCombatAsync()
     {
         // bla bla setup.
         //_allyArea.gameObject.SetActive(true);
@@ -114,77 +79,23 @@ public class CombatSystem : ProviderBehaviour
         _combatGUI.Activate();
         _combatArea.gameObject.SetActive(true);
 
-
         await _combatGUI.ShowDismissableTextAsync("You've been attacked!");
 
-        // combat test.
-        _allyUnits = _debugAllies.Select(x => new CombatUnit(x.UnitName, x)).ToList();
-        _combatOrder = new();
-        _combatOrder.AddRange(_allyUnits);
-        _combatOrder.AddRange(_enemyUnits);
-
-        _allyArea.DestroyChildren();
-        for (int i = 0; i < _allyUnits.Count; i++)
-            Instantiate(_debugAllies[i].Prefab, _allyArea).transform.localPosition = _unitSpacing * i;
-
-        //for (int i = 0; i < _enemyUnits.Count; i++)
-        //    Instantiate(_enemyPrefab, _enemyArea).transform.localPosition = _unitSpacing * i;
-        // randomize order for now.
-
-        ShuffleCombatOrder();
-
         // now do each units turn after each other.
-        bool activeCombat = true;
-        while (activeCombat)
-        {
-            // TODO: this would not allow units to be taken out of combat
-            for (int i = 0; i < _combatOrder.Count; i++)
-            {
-                await _combatOrder[i].DoTurnAsync(this, _combatGUI);
-                // always also wait for at least one additional frame between turns to avoid key inputs mixing into both.
-                await Awaitable.NextFrameAsync();
-
-                for (int j = _combatOrder.Count - 1; j >= 0; j--)
-                {
-                    var unit = _combatOrder[j];
-                    if (unit.CurrentHealth <= 0)
-                    {
-                        if (j <= i)
-                        {
-                            i--;
-                        }
-                        _combatOrder.RemoveAt(j);
-                        RemoveUnitFromCombat(unit);
-                        await _combatGUI.ShowDismissableTextAsync($"{unit.Name} has died.");
-                        await Awaitable.NextFrameAsync();
-                    }
-                }
-
-                activeCombat = _allyUnits.Count > 0 && _enemyUnits.Count > 0;
-                if (!activeCombat)
-                    break;
-                //TODO: how do i detect whether a unit has died?
-                // on damage -> health < 0 would be easiest, but the combat system needs to know about it, and then also correctly
-                // handle removing the unit from:
-                // - the combat order
-                // - from the ally / enemy units lists
-                // - and also remove the gameobject from the respective areas in the world.
-            }
-        }
+        await CombatLoopAsync();
         // rewards and stuff would be given out in here i suppose.
         EndCombatAsync();
     }
 
-    private async void CombatLoop(EncounterDefinition encounter)
+    private async Awaitable CombatLoopAsync()
     {
         CombatState combatState = new(this);
-        combatState.Init(_debugAllies, encounter);
+        combatState.Init(_debugAllies, _currentEncounter);
 
         while (combatState.Status == CombatStatus.InProgress)
         {
-            var unit = combatState.GetNextTurn();
-            if (unit == null)
-                throw new NullReferenceException("Expected unit");
+            var unit = combatState.GetNextTurn() 
+                ?? throw new NullReferenceException("Expected unit");
             await unit.DoTurnAsync(this, _combatGUI);
         }
         switch (combatState.Status)
@@ -201,31 +112,19 @@ public class CombatSystem : ProviderBehaviour
         }
     }
 
-    private void ShuffleCombatOrder()
+    internal void InstantiateUnit(CombatUnit unit, bool isAlly)
     {
-        for (int i = 0; i < _combatOrder.Count * 2; i++)
-        {
-            var a = Random.Range(0, _combatOrder.Count);
-            var b = Random.Range(0, _combatOrder.Count);
-            (_combatOrder[a], _combatOrder[b]) = (_combatOrder[b], _combatOrder[a]);
-        }
+        var instance = Instantiate(unit.UnitDefinition.Prefab);
+        unit.PrefabInstance = instance;
+
+        var layout = isAlly ? _allyLayout : _enemyLayout;
+        layout.Add(unit);
     }
 
-    private void RemoveUnitFromCombat(CombatUnit unit)
+    internal void InstantiateUnits(IEnumerable<CombatUnit> units, bool asAlly)
     {
-        // remove from order and from sets
-        if (_allyUnits.Contains(unit))
-        {
-            var index = _allyUnits.IndexOf(unit);
-            Destroy(_allyArea.GetChild(index).gameObject);
-            _allyUnits.RemoveAt(index);
-        }
-        else if (_enemyUnits.Contains(unit))
-        {
-            var index = _enemyUnits.IndexOf(unit);
-            Destroy(_enemyArea.GetChild(index).gameObject);
-            _enemyUnits.RemoveAt(index);
-        }
+        foreach (var unit in units) 
+            InstantiateUnit(unit, asAlly);
     }
 
     private async void EndCombatAsync()
@@ -241,38 +140,33 @@ public class CombatSystem : ProviderBehaviour
 
     // NONE OF THESE ARE SAFE
 
-    public List<CombatUnit> GetEnemies(CombatUnit unit)
+    public IReadOnlyList<CombatUnit> GetEnemies(CombatUnit unit)
     {
-        return (_allyUnits.Contains(unit) ? _enemyUnits : _allyUnits);
+        return _combatState.GetEnemies(unit);
     }
-    public List<CombatUnit> GetAllies(CombatUnit unit)
+    public IReadOnlyList<CombatUnit> GetAllies(CombatUnit unit)
     {
-        return (_allyUnits.Contains(unit) ? _allyUnits : _enemyUnits);
+        return _combatState.GetAllies(unit);
     }
 
     public async Awaitable<CombatUnit> SelectEnemyUnitAsync(CombatUnit sourceUnit)
     {
-        var unitIsAlly = _allyUnits.Contains(sourceUnit);
-        var enemies = unitIsAlly ? _enemyUnits : _allyUnits;
-        var parent = unitIsAlly ? _enemyArea : _allyArea;
-        return await SelectUnitAsync(enemies, parent);
+        var enemies = _combatState.GetEnemies(sourceUnit);
+        return await SelectUnitAsync(enemies);
     }
     public async Awaitable<CombatUnit> SelectAllyUnitAsync(CombatUnit sourceUnit)
     {
-        var unitIsAlly = _allyUnits.Contains(sourceUnit);
-        var allies = unitIsAlly ? _allyUnits : _enemyUnits;
-        var parent = unitIsAlly ? _allyArea : _allyArea;
-        return await SelectUnitAsync(allies, parent);
+        var allies = _combatState.GetAllies(sourceUnit);
+        return await SelectUnitAsync(allies);
     }
 
-    private async Awaitable<CombatUnit> SelectUnitAsync(IList<CombatUnit> units, Transform instanceParent)
+    // == SelectUnitsAsync(units, 1)
+    private async Awaitable<CombatUnit> SelectUnitAsync(IReadOnlyList<CombatUnit> units)
     {
-        // var selectionIndex = await _combatGUI.SelectActionAsync(units.Select(x => x.UnitName).ToArray());
-        // return units[selectionIndex];
-
         // in this scenario, an instanced prefab exists for each combat unit.
         var selectedIndex = 0;
-        instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(true);
+        // TODO: this whole hard coded instance get child gameobject bla SUCKS.
+        units[selectedIndex].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
         while (Input.GetKeyDown(KeyCode.Return) == false)
         {
             var oldSelection = selectedIndex;
@@ -287,13 +181,58 @@ public class CombatSystem : ProviderBehaviour
             } 
             else
             {
-                instanceParent.GetChild(oldSelection).GetChild(0).gameObject.SetActive(false);
-                instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(true);
+                units[oldSelection].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
+                units[selectedIndex].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
             }
             await Awaitable.NextFrameAsync();
         }
-        instanceParent.GetChild(selectedIndex).GetChild(0).gameObject.SetActive(false);
+        units[selectedIndex].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
         return units[selectedIndex];
+    }
+
+    // NOTE: allow "circular" selections? i.e. wrap from right side back to left?
+    private async Awaitable<IReadOnlyList<CombatUnit>> SelectUnitsAsync(IReadOnlyList<CombatUnit> units, int maxCount)
+    {
+        var selectedIndex = 0;
+        var maxIndex = Math.Max(0, units.Count - maxCount);
+
+        for (int i = selectedIndex; i < units.Count && i < selectedIndex + maxCount; i++)
+            units[i].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
+
+        while (Input.GetKeyDown(KeyCode.Return) == false)
+        {
+            var oldSelection = selectedIndex;
+
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+                selectedIndex++;
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+                selectedIndex--;
+            if (selectedIndex < 0 || selectedIndex >= units.Count)
+            {
+                selectedIndex = oldSelection;
+            } 
+            else
+            {
+                if (oldSelection < selectedIndex) // selection shifts right
+                {
+                    units[oldSelection].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
+                    units[selectedIndex+maxCount].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
+                } 
+                else // selection shifts left
+                {
+                    units[oldSelection].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
+                    units[selectedIndex + maxCount].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
+                }
+            }
+            await Awaitable.NextFrameAsync();
+        }
+        // disable selection
+        for (int i = selectedIndex; i < units.Count && i < selectedIndex + maxCount; i++)
+            units[i].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
+
+        // meh
+        var resultList = units.Skip(selectedIndex).Take(maxCount).ToList();
+        return resultList;
     }
 
     public override void Dispose()

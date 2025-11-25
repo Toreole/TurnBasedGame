@@ -19,7 +19,7 @@ public class CombatUnit : INameAndDescription
 
     // all of these are taken from UnitDefinition is the idea.
     // about the name im not so sure.
-    public CombatUnit(string unitName, UnitDefinition def)
+    public CombatUnit(string unitName, UnitDefinition def, int instanceId)
     {
         _unitName = unitName;
         _maxHealth = def.MaxHealth;
@@ -31,7 +31,8 @@ public class CombatUnit : INameAndDescription
         _currentHealth = _maxHealth;
         _currentMana = _maxMana;
 
-        this.UnitDefinition = def;
+        UnitDefinition = def;
+        InstanceId = instanceId;
     }
 
     [SerializeField]
@@ -52,18 +53,22 @@ public class CombatUnit : INameAndDescription
     //[SerializeField]
     //private Ability[] m_abilities;
 
-    public UnitDefinition UnitDefinition { get; private set; }
-
-    public string Name => _unitName;
-
-    public string Description => "";
-
     // TODO
     private float _currentHealth;
     private float _currentMana;
 
     public float CurrentHealth => _currentHealth;
     public float MaxHealth => _maxHealth;
+    public string Name => _unitName;
+    public string Description => "";
+
+    public GameObject PrefabInstance { get; internal set; }
+    public UnitDefinition UnitDefinition { get; private set; }
+
+    /// <summary>
+    /// Starts at 1, counts up, unique to every Combat
+    /// </summary>
+    public int InstanceId { get; private set; }
 
     internal event Action<CombatUnit> OnUnitDied;
 

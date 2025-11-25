@@ -5,6 +5,8 @@ using UnityEngine;
 /// <summary>
 /// Internal combat state for the combat system
 /// </summary>
+// this may or may not need a lot of events for GUI updates that 
+// display aspects of the combat state (i.e. turn order)
 internal class CombatState
 {
     public CombatStatus Status
@@ -26,6 +28,8 @@ internal class CombatState
     private int _currentUnitIndex = 0;
     private int _currentTurn = 0;
 
+    private int _nextId = 1;
+
     private List<CombatUnit> _allyUnits;
     private List<CombatUnit> _enemyUnits;
 
@@ -41,8 +45,8 @@ internal class CombatState
 
     public void Init(List<UnitDefinition> allyUnits, EncounterDefinition encounter)
     {
-        _allyUnits = allyUnits.Select(it => new CombatUnit(it.UnitName, it)).ToList();
-
+        _allyUnits = allyUnits.Select(it => new CombatUnit(it.UnitName, it, _nextId++)).ToList();
+        
         var enemyDefs = encounter.Enemies;
         // i feel like theres something better you can do here, but it will do.
         var countByName = new Dictionary<string, int>();
@@ -66,27 +70,21 @@ internal class CombatState
                 char discriminator = (char)('A' + instancesByName[ed.UnitName]++);
                 unitName = $"{unitName} {discriminator}";
             }
-            _enemyUnits.Add(new CombatUnit(unitName, ed));
+            _enemyUnits.Add(new CombatUnit(unitName, ed, _nextId++));
             // TODO: instantiate prefabs via the CombatSystem.
             // how would we manage the prefabs as a whole?
             // Instantiate(ed.Prefab, _enemyArea).transform.localPosition = _unitSpacing * iter;
             iter++;
         }
+        _combatSystem.InstantiateUnits(_allyUnits, true);
+        _combatSystem.InstantiateUnits(_enemyUnits, false);
     }
 
     public bool AddUnit(UnitDefinition unit, bool asAlly)
     {
         return AddUnit(
-            new CombatUnit(unit.UnitName, unit), 
+            new CombatUnit(unit.UnitName, unit, _nextId++), 
             asAlly ? _allyUnits : _enemyUnits
-        );
-    }
-
-    public bool AddUnit(UnitDefinition unit, CombatUnit owner)
-    {
-        return AddUnit(
-            new CombatUnit(unit.UnitName, unit), 
-            _allyUnits.Contains(owner) ? _allyUnits : _enemyUnits
         );
     }
 
@@ -143,6 +141,32 @@ internal class CombatState
         return _combatOrder[_currentUnitIndex];
     }
 
+
+    internal void ShuffleCombatOrder(int iterations)
+    {
+        for (int i = 0; i < iterations; i++)
+        {
+            var a = Random.Range(0, _combatOrder.Count);
+            var b = Random.Range(0, _combatOrder.Count);
+            (_combatOrder[a], _combatOrder[b]) = (_combatOrder[b], _combatOrder[a]);
+        }
+    }
+
+    // returns a
+    public IReadOnlyList<CombatUnit> GetEnemies(CombatUnit unit)
+    {
+        return (_allyUnits.Contains(unit) ? _enemyUnits : _allyUnits).ToList();
+    }
+    public IReadOnlyList<CombatUnit> GetAllies(CombatUnit unit)
+    {
+        return (_allyUnits.Contains(unit) ? _allyUnits : _enemyUnits).ToList();
+    }
+
+    public bool IsAlly(CombatUnit unit)
+    {
+        return _allyUnits.Contains(unit);
+    }
+
     //private class InstanceCounter
     //{
     //    public List<CombatUnit> units;
@@ -154,4 +178,3 @@ public enum CombatStatus
 {
     Error, InProgress, PlayerWin, PlayerLose
 }
-

@@ -10,6 +10,8 @@
 // and instead just fill injected fields via the DependencyService
 
 // This is not really specific to Combat tbh.
+
+// TODO: CombatGUI needs capability of showing Resource Bars for Allies.
 public abstract class CombatGUI : ProviderBehaviour
 {
     /// <summary>
