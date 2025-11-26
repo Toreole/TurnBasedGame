@@ -195,6 +195,7 @@ namespace Assets.Scripts
             //wait for input by user
             while (Input.anyKeyDown == false)
                 await Awaitable.NextFrameAsync();
+            await Awaitable.NextFrameAsync();
             //disable ui elements again
             _textPanel.SetActive(false);
             _textPanelConfirm.SetActive(false);

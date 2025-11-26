@@ -454,6 +454,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 313503026}
+  - component: {fileID: 313503027}
   m_Layer: 0
   m_Name: Allies
   m_TagString: Untagged
@@ -476,6 +477,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2091264224}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &313503027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 313503025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50988693397d1043b2ffe09c0a4f9e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _parent: {fileID: 0}
+  _spacing: 1.5
+  _direction: {x: 1, y: 0}
 --- !u!1 &415740216
 GameObject:
   m_ObjectHideFlags: 0
@@ -545,10 +561,11 @@ MonoBehaviour:
   _debugAllies:
   - {fileID: 11400000, guid: 14c65e3c57be163419307522fac9a7be, type: 2}
   - {fileID: 11400000, guid: ff841371d8b980844a5eb1fb1c5b17d0, type: 2}
-  _allyPrefab: {fileID: 1090580327573074848, guid: 244d11338ab2af64e9c8a5b1651ed1ac, type: 3}
   _combatArea: {fileID: 2091264224}
   _allyArea: {fileID: 313503026}
+  _allyLayout: {fileID: 313503027}
   _enemyArea: {fileID: 2115770430}
+  _enemyLayout: {fileID: 2115770431}
   _unitSpacing: {x: 1.5, y: 0}
   _screenTransitioner: {fileID: 71077154}
   _screenTransitionDuration: 2
@@ -5578,6 +5595,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2115770430}
+  - component: {fileID: 2115770431}
   m_Layer: 0
   m_Name: Enemies
   m_TagString: Untagged
@@ -5600,6 +5618,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2091264224}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2115770431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115770429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50988693397d1043b2ffe09c0a4f9e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _parent: {fileID: 0}
+  _spacing: 1.5
+  _direction: {x: 1, y: 0}
 --- !u!1 &2135553262
 GameObject:
   m_ObjectHideFlags: 0

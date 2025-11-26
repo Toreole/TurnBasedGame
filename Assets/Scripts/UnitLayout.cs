@@ -8,6 +8,8 @@ using UnityEngine;
 /// </summary>
 public abstract class UnitLayout : MonoBehaviour
 {
+    protected static readonly Vector2 FarFarAway = new Vector2(10000, 10000);
+
     public abstract void Add(CombatUnit unit);
     public abstract void AddAll(IEnumerable<CombatUnit> units);
     /// <summary>
@@ -19,6 +21,6 @@ public abstract class UnitLayout : MonoBehaviour
     public abstract void Clear();
 
     public abstract void TransferUnit(CombatUnit unit, UnitLayout other);
-    protected abstract void AcceptUnit(CombatUnit unit, UnitLayout source);
+    internal protected abstract void AcceptUnit(CombatUnit unit, UnitLayout source);
 }
 

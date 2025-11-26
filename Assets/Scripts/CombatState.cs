@@ -24,16 +24,16 @@ internal class CombatState
     }
 
     // ObservableList?
-    private List<CombatUnit> _combatOrder;
+    private readonly List<CombatUnit> _combatOrder = new();
     private int _currentUnitIndex = 0;
     private int _currentTurn = 0;
 
     private int _nextId = 1;
 
-    private List<CombatUnit> _allyUnits;
-    private List<CombatUnit> _enemyUnits;
+    private readonly List<CombatUnit> _allyUnits = new();
+    private readonly List<CombatUnit> _enemyUnits = new();
 
-    private CombatSystem _combatSystem;
+    private readonly CombatSystem _combatSystem;
 
     // for avoiding name conflicts. // combines three dictionaries into one
     // private Dictionary<string, InstanceCounter> _unitsByName;
@@ -45,7 +45,10 @@ internal class CombatState
 
     public void Init(List<UnitDefinition> allyUnits, EncounterDefinition encounter)
     {
-        _allyUnits = allyUnits.Select(it => new CombatUnit(it.UnitName, it, _nextId++)).ToList();
+        foreach (var unit in allyUnits)
+        {
+            AddUnit(unit, true);
+        }
         
         var enemyDefs = encounter.Enemies;
         // i feel like theres something better you can do here, but it will do.
@@ -70,7 +73,9 @@ internal class CombatState
                 char discriminator = (char)('A' + instancesByName[ed.UnitName]++);
                 unitName = $"{unitName} {discriminator}";
             }
-            _enemyUnits.Add(new CombatUnit(unitName, ed, _nextId++));
+            var newUnit = new CombatUnit(unitName, ed, _nextId++);
+            AddUnitToSet(newUnit, _enemyUnits);
+            
             // TODO: instantiate prefabs via the CombatSystem.
             // how would we manage the prefabs as a whole?
             // Instantiate(ed.Prefab, _enemyArea).transform.localPosition = _unitSpacing * iter;
@@ -78,20 +83,23 @@ internal class CombatState
         }
         _combatSystem.InstantiateUnits(_allyUnits, true);
         _combatSystem.InstantiateUnits(_enemyUnits, false);
+
+        _combatOrder.AddRange(_allyUnits);
+        _combatOrder.AddRange(_enemyUnits);
     }
 
     public bool AddUnit(UnitDefinition unit, bool asAlly)
     {
-        return AddUnit(
+        return AddUnitToSet(
             new CombatUnit(unit.UnitName, unit, _nextId++), 
             asAlly ? _allyUnits : _enemyUnits
         );
     }
 
-    private bool AddUnit(CombatUnit unit, List<CombatUnit> unitSet)
+    private bool AddUnitToSet(CombatUnit unit, List<CombatUnit> unitSet)
     {
         unit.OnUnitDied += OnUnitDeath;
-
+        unitSet.Add(unit);
         // Create Instance from Prefab.
 
         return true;
@@ -99,6 +107,7 @@ internal class CombatState
 
     private void OnUnitDeath(CombatUnit unit)
     {
+        _combatSystem.RemoveUnitInstance(unit, _allyUnits.Contains(unit));
         RemoveUnitFromCombat(unit);
     }
 

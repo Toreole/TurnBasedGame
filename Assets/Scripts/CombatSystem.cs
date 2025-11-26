@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,15 +20,9 @@ public class CombatSystem : ProviderBehaviour
     private Transform _combatArea;
     // this is all very crude.
     [SerializeField]
-    private Transform _allyArea;
-    [SerializeField]
     private UnitLayout _allyLayout;
     [SerializeField]
-    private Transform _enemyArea;
-    [SerializeField]
     private UnitLayout _enemyLayout;
-    [SerializeField]
-    private Vector2 _unitSpacing;
 
     [SerializeField]
     private ScreenTransition _screenTransitioner;
@@ -90,7 +85,9 @@ public class CombatSystem : ProviderBehaviour
     private async Awaitable CombatLoopAsync()
     {
         CombatState combatState = new(this);
+        _combatState = combatState;
         combatState.Init(_debugAllies, _currentEncounter);
+        combatState.ShuffleCombatOrder(10);
 
         while (combatState.Status == CombatStatus.InProgress)
         {
@@ -127,8 +124,18 @@ public class CombatSystem : ProviderBehaviour
             InstantiateUnit(unit, asAlly);
     }
 
+    internal void RemoveUnitInstance(CombatUnit unit, bool wasAlly)
+    {
+        var layout = wasAlly ? _allyLayout : _enemyLayout;
+        layout.Remove(unit);
+    }
+
     private async void EndCombatAsync()
     {
+        _combatState = null;
+        _allyLayout.Clear();
+        _enemyLayout.Clear();
+
         await _combatGUI.ShowDismissableTextAsync("You win!");
         _combatGUI.Deactivate();
         await Awaitable.NextFrameAsync();
@@ -142,6 +149,7 @@ public class CombatSystem : ProviderBehaviour
 
     public IReadOnlyList<CombatUnit> GetEnemies(CombatUnit unit)
     {
+        Assert.IsNotNull(_combatState);
         return _combatState.GetEnemies(unit);
     }
     public IReadOnlyList<CombatUnit> GetAllies(CombatUnit unit)
@@ -151,6 +159,7 @@ public class CombatSystem : ProviderBehaviour
 
     public async Awaitable<CombatUnit> SelectEnemyUnitAsync(CombatUnit sourceUnit)
     {
+        Assert.IsNotNull(_combatState);
         var enemies = _combatState.GetEnemies(sourceUnit);
         return await SelectUnitAsync(enemies);
     }
