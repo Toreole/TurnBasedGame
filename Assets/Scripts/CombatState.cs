@@ -34,6 +34,8 @@ internal class CombatState
     private readonly List<CombatUnit> _enemyUnits = new();
 
     private readonly CombatSystem _combatSystem;
+    // encounters may have special triggers attached to them.
+    private EncounterDefinition _encounterReference; 
 
     // for avoiding name conflicts. // combines three dictionaries into one
     // private Dictionary<string, InstanceCounter> _unitsByName;
@@ -45,6 +47,7 @@ internal class CombatState
 
     public void Init(List<UnitDefinition> allyUnits, EncounterDefinition encounter)
     {
+        _encounterReference = encounter;
         foreach (var unit in allyUnits)
         {
             AddUnit(unit, true);

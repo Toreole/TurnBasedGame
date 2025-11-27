@@ -62,7 +62,7 @@ public class CombatUnit : INameAndDescription
     public string Name => _unitName;
     public string Description => "";
 
-    public GameObject PrefabInstance { get; internal set; }
+    public CombatUnitInstance PrefabInstance { get; internal set; }
     public UnitDefinition UnitDefinition { get; private set; }
 
     /// <summary>

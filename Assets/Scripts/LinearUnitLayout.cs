@@ -14,7 +14,7 @@ public class LinearUnitLayout : UnitLayout
     [SerializeField]
     private Vector2 _direction;
 
-    private readonly List<GameObject> _managedUnits = new();
+    private readonly List<CombatUnitInstance> _managedUnits = new();
 
     private void Start()
     {

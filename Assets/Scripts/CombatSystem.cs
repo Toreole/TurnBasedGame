@@ -93,7 +93,9 @@ public class CombatSystem : ProviderBehaviour
         {
             var unit = combatState.GetNextTurn() 
                 ?? throw new NullReferenceException("Expected unit");
+            unit.PrefabInstance.SetHighlight(true);
             await unit.DoTurnAsync(this, _combatGUI);
+            unit.PrefabInstance.SetHighlight(false);
         }
         switch (combatState.Status)
         {
@@ -111,7 +113,8 @@ public class CombatSystem : ProviderBehaviour
 
     internal void InstantiateUnit(CombatUnit unit, bool isAlly)
     {
-        var instance = Instantiate(unit.UnitDefinition.Prefab);
+        var instance = Instantiate(unit.UnitDefinition.Prefab)
+            .GetComponent<CombatUnitInstance>();
         unit.PrefabInstance = instance;
 
         var layout = isAlly ? _allyLayout : _enemyLayout;
@@ -120,6 +123,7 @@ public class CombatSystem : ProviderBehaviour
 
     internal void InstantiateUnits(IEnumerable<CombatUnit> units, bool asAlly)
     {
+        // TODO use layout.AddAll() instead.
         foreach (var unit in units) 
             InstantiateUnit(unit, asAlly);
     }
@@ -130,6 +134,7 @@ public class CombatSystem : ProviderBehaviour
         layout.Remove(unit);
     }
 
+    // TODO: persist health, etc. of player and persistent allies.
     private async void EndCombatAsync()
     {
         _combatState = null;
@@ -145,7 +150,7 @@ public class CombatSystem : ProviderBehaviour
         player.enabled = true;
     }
 
-    // NONE OF THESE ARE SAFE
+    // Methods for CombatUnit.DoTurnAsync() to work
 
     public IReadOnlyList<CombatUnit> GetEnemies(CombatUnit unit)
     {
@@ -154,6 +159,7 @@ public class CombatSystem : ProviderBehaviour
     }
     public IReadOnlyList<CombatUnit> GetAllies(CombatUnit unit)
     {
+        Assert.IsNotNull(_combatState);
         return _combatState.GetAllies(unit);
     }
 
@@ -175,7 +181,7 @@ public class CombatSystem : ProviderBehaviour
         // in this scenario, an instanced prefab exists for each combat unit.
         var selectedIndex = 0;
         // TODO: this whole hard coded instance get child gameobject bla SUCKS.
-        units[selectedIndex].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
+        units[selectedIndex].PrefabInstance.SetSelected(true);
         while (Input.GetKeyDown(KeyCode.Return) == false)
         {
             var oldSelection = selectedIndex;
@@ -190,12 +196,12 @@ public class CombatSystem : ProviderBehaviour
             } 
             else
             {
-                units[oldSelection].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
-                units[selectedIndex].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
+                units[oldSelection].PrefabInstance.SetSelected(false);
+                units[selectedIndex].PrefabInstance.SetSelected(true);
             }
             await Awaitable.NextFrameAsync();
         }
-        units[selectedIndex].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
+        units[selectedIndex].PrefabInstance.SetSelected(false);
         return units[selectedIndex];
     }
 
@@ -206,7 +212,7 @@ public class CombatSystem : ProviderBehaviour
         var maxIndex = Math.Max(0, units.Count - maxCount);
 
         for (int i = selectedIndex; i < units.Count && i < selectedIndex + maxCount; i++)
-            units[i].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
+            units[i].PrefabInstance.SetSelected(true);
 
         while (Input.GetKeyDown(KeyCode.Return) == false)
         {
@@ -224,20 +230,20 @@ public class CombatSystem : ProviderBehaviour
             {
                 if (oldSelection < selectedIndex) // selection shifts right
                 {
-                    units[oldSelection].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
-                    units[selectedIndex+maxCount].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
+                    units[oldSelection].PrefabInstance.SetSelected(false);
+                    units[selectedIndex+maxCount].PrefabInstance.SetSelected(true);
                 } 
                 else // selection shifts left
                 {
-                    units[oldSelection].PrefabInstance.transform.GetChild(0).gameObject.SetActive(true);
-                    units[selectedIndex + maxCount].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
+                    units[oldSelection].PrefabInstance.SetSelected(true);
+                    units[selectedIndex + maxCount].PrefabInstance.SetSelected(false);
                 }
             }
             await Awaitable.NextFrameAsync();
         }
         // disable selection
         for (int i = selectedIndex; i < units.Count && i < selectedIndex + maxCount; i++)
-            units[i].PrefabInstance.transform.GetChild(0).gameObject.SetActive(false);
+            units[i].PrefabInstance.SetSelected(false);
 
         // meh
         var resultList = units.Skip(selectedIndex).Take(maxCount).ToList();
