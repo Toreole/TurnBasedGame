@@ -22,4 +22,11 @@ public class UnitDefinition : ScriptableObject
     public float MinDamage { get; private set; }
     [field: SerializeField]
     public float MaxDamage { get; private set; }
+
+    internal virtual CombatUnit InstantiateUnit(int instanceId, int counter)
+    {
+        var name = $"{UnitName} {'A' + counter}";
+        return new CombatUnit(name, this, instanceId);
+    }
+
 }

@@ -12,10 +12,11 @@ public class CombatTrigger : DependentBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log("Collision");
+        // Debug.Log("Collision");
         if (collision.rigidbody.CompareTag("Player"))
         {
             _combatSystem.Engage(_encounter);
+            gameObject.SetActive(false);
         }
     }
 }

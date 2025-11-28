@@ -33,6 +33,8 @@ internal class CombatState
     private readonly List<CombatUnit> _allyUnits = new();
     private readonly List<CombatUnit> _enemyUnits = new();
 
+    private readonly List<CombatUnit> _deadUnits = new();
+
     private readonly CombatSystem _combatSystem;
     // encounters may have special triggers attached to them.
     private EncounterDefinition _encounterReference; 
@@ -70,13 +72,7 @@ internal class CombatState
         var iter = 0;
         foreach (var ed in enemyDefs)
         {
-            var unitName = ed.UnitName;
-            if (countByName[ed.UnitName] > 1)
-            {
-                char discriminator = (char)('A' + instancesByName[ed.UnitName]++);
-                unitName = $"{unitName} {discriminator}";
-            }
-            var newUnit = new CombatUnit(unitName, ed, _nextId++);
+            var newUnit = ed.InstantiateUnit(_nextId++, instancesByName[ed.UnitName]++);
             AddUnitToSet(newUnit, _enemyUnits);
             
             // TODO: instantiate prefabs via the CombatSystem.
@@ -94,7 +90,7 @@ internal class CombatState
     public bool AddUnit(UnitDefinition unit, bool asAlly)
     {
         return AddUnitToSet(
-            new CombatUnit(unit.UnitName, unit, _nextId++), 
+            unit.InstantiateUnit(_nextId++, 0), 
             asAlly ? _allyUnits : _enemyUnits
         );
     }
@@ -110,6 +106,7 @@ internal class CombatState
 
     private void OnUnitDeath(CombatUnit unit)
     {
+        _deadUnits.Add(unit);
         _combatSystem.RemoveUnitInstance(unit, _allyUnits.Contains(unit));
         RemoveUnitFromCombat(unit);
     }
@@ -177,6 +174,19 @@ internal class CombatState
     public bool IsAlly(CombatUnit unit)
     {
         return _allyUnits.Contains(unit);
+    }
+
+    internal void Cleanup()
+    {
+        Debug.Log($"CombatState.Cleanup(): {_allyUnits.Count}, {_enemyUnits.Count}, {_deadUnits.Count} ");
+        foreach (var unit in _allyUnits.Concat(_enemyUnits).Concat(_deadUnits))
+        {
+            if (unit.PrefabInstance != null)
+            {
+                Object.Destroy(unit.PrefabInstance.gameObject);
+                unit.PrefabInstance = null;
+            }
+        }
     }
 
     //private class InstanceCounter

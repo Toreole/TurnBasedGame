@@ -559,14 +559,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _debugAllies:
-  - {fileID: 11400000, guid: 14c65e3c57be163419307522fac9a7be, type: 2}
-  - {fileID: 11400000, guid: ff841371d8b980844a5eb1fb1c5b17d0, type: 2}
+  - {fileID: 11400000, guid: f152dedd587efda4b990bd9f9c9e4702, type: 2}
+  - {fileID: 11400000, guid: c7ccc1d4af2ccba4f8bdd9e264236e02, type: 2}
   _combatArea: {fileID: 2091264224}
-  _allyArea: {fileID: 313503026}
   _allyLayout: {fileID: 313503027}
-  _enemyArea: {fileID: 2115770430}
   _enemyLayout: {fileID: 2115770431}
-  _unitSpacing: {x: 1.5, y: 0}
   _screenTransitioner: {fileID: 71077154}
   _screenTransitionDuration: 2
 --- !u!4 &443194378

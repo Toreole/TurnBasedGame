@@ -27,7 +27,7 @@ public class LinearUnitLayout : UnitLayout
         Assert.IsNotNull(instance);
         var offset = _direction * (_spacing * _managedUnits.Count);
         _managedUnits.Add(instance);
-        Debug.Log("set instance parent");
+        // Debug.Log("set instance parent");
         instance.transform.parent = _parent;
         instance.transform.localPosition = offset;
     }

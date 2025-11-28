@@ -84,20 +84,19 @@ public class CombatSystem : ProviderBehaviour
 
     private async Awaitable CombatLoopAsync()
     {
-        CombatState combatState = new(this);
-        _combatState = combatState;
-        combatState.Init(_debugAllies, _currentEncounter);
-        combatState.ShuffleCombatOrder(10);
-
-        while (combatState.Status == CombatStatus.InProgress)
+        _combatState = new(this);
+        _combatState.Init(_debugAllies, _currentEncounter);
+        _combatState.ShuffleCombatOrder(10);
+        Assert.IsNotNull(_combatState);
+        while (_combatState.Status == CombatStatus.InProgress)
         {
-            var unit = combatState.GetNextTurn() 
+            var unit = _combatState.GetNextTurn() 
                 ?? throw new NullReferenceException("Expected unit");
             unit.PrefabInstance.SetHighlight(true);
             await unit.DoTurnAsync(this, _combatGUI);
             unit.PrefabInstance.SetHighlight(false);
         }
-        switch (combatState.Status)
+        switch (_combatState.Status)
         {
             case CombatStatus.PlayerWin:
                 await _combatGUI.ShowDismissableTextAsync("yippie you win");
@@ -109,10 +108,32 @@ public class CombatSystem : ProviderBehaviour
                 Debug.LogError("yikes");
                 break;
         }
+        Assert.IsNotNull(_combatState);
+        await EndCombatAsync();
+    }
+
+    // TODO: persist health, etc. of player and persistent allies.
+    private async Awaitable EndCombatAsync()
+    {
+        _allyLayout.Clear();
+        _enemyLayout.Clear();
+        Assert.IsNotNull(_combatState);
+        _combatState.Cleanup();
+        _combatState = null;
+
+        await _combatGUI.ShowDismissableTextAsync("You win!");
+        _combatGUI.Deactivate();
+        await Awaitable.NextFrameAsync();
+        Camera.main.transform.position = _oldCameraPosition;
+
+        var player = DependencyService.RequestDependency<PlayerMovement>();
+        player.enabled = true;
     }
 
     internal void InstantiateUnit(CombatUnit unit, bool isAlly)
     {
+        Assert.IsNotNull(unit);
+        Assert.IsNotNull(unit.UnitDefinition);
         var instance = Instantiate(unit.UnitDefinition.Prefab)
             .GetComponent<CombatUnitInstance>();
         unit.PrefabInstance = instance;
@@ -132,22 +153,6 @@ public class CombatSystem : ProviderBehaviour
     {
         var layout = wasAlly ? _allyLayout : _enemyLayout;
         layout.Remove(unit);
-    }
-
-    // TODO: persist health, etc. of player and persistent allies.
-    private async void EndCombatAsync()
-    {
-        _combatState = null;
-        _allyLayout.Clear();
-        _enemyLayout.Clear();
-
-        await _combatGUI.ShowDismissableTextAsync("You win!");
-        _combatGUI.Deactivate();
-        await Awaitable.NextFrameAsync();
-        Camera.main.transform.position = _oldCameraPosition ;
-
-        var player = DependencyService.RequestDependency<PlayerMovement>();
-        player.enabled = true;
     }
 
     // Methods for CombatUnit.DoTurnAsync() to work

@@ -9,13 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3db17b5340816a44b9d80b54dafee590, type: 3}
-  m_Name: UD_Ally_A
+  m_Script: {fileID: 11500000, guid: 453208790a09d7a45976a976a7b2d9df, type: 3}
+  m_Name: UD_Ally_B_Persist 1
   m_EditorClassIdentifier: 
   <Prefab>k__BackingField: {fileID: 1090580327573074848, guid: 244d11338ab2af64e9c8a5b1651ed1ac, type: 3}
-  <UnitName>k__BackingField: Ally A
-  <MaxHealth>k__BackingField: 10
-  <MaxMana>k__BackingField: 0
+  <UnitName>k__BackingField: Player Ally
+  <MaxHealth>k__BackingField: 20
+  <MaxMana>k__BackingField: 20
   <IsPlayerControlled>k__BackingField: 1
-  <MinDamage>k__BackingField: 2
-  <MaxDamage>k__BackingField: 6
+  <MinDamage>k__BackingField: 10
+  <MaxDamage>k__BackingField: 20
