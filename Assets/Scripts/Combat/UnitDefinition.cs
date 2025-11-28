@@ -25,7 +25,7 @@ public class UnitDefinition : ScriptableObject
 
     internal virtual CombatUnit InstantiateUnit(int instanceId, int counter)
     {
-        var name = $"{UnitName} {'A' + counter}";
+        var name = $"{UnitName} {(char)('A' + counter)}";
         return new CombatUnit(name, this, instanceId);
     }
 

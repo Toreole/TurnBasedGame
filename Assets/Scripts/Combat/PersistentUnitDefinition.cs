@@ -7,7 +7,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PersistentUnitDefinition", menuName = "GameData/PersistentUnitDefinition")]
 public class PersistentUnitDefinition : UnitDefinition
 {
-    [NonSerialized]
+    [NonSerialized] // otherwise unity fucks it up by assigning _instance = new()
     private CombatUnit _instance = null;
 
     internal override CombatUnit InstantiateUnit(int instanceId, int counter)
