@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 // stuff like preferred abilities, aggression, strategy / role etc, which affect what
 // the unit will end up doing.
 [Serializable]
-public class CombatUnit : INameAndDescription
+public abstract class CombatUnit : INameAndDescription
 {
     public CombatUnit()
     {
@@ -24,7 +24,7 @@ public class CombatUnit : INameAndDescription
         _unitName = unitName;
         _maxHealth = def.MaxHealth;
         _maxMana = def.MaxMana;
-        _isPlayerControlled = def.IsPlayerControlled;
+
         _minDamage = def.MinDamage;
         _maxDamage = def.MaxDamage;
 
@@ -41,8 +41,6 @@ public class CombatUnit : INameAndDescription
     private float _maxHealth;
     [SerializeField]
     private float _maxMana;
-    [SerializeField]
-    private bool _isPlayerControlled;
 
     // for basic attacks.
     // replace this with a weapon with those attributes.
@@ -68,7 +66,7 @@ public class CombatUnit : INameAndDescription
     /// <summary>
     /// Starts at 1, counts up, unique to every Combat
     /// </summary>
-    public int InstanceId { get; private set; }
+    public int InstanceId { get; internal set; }
 
     internal event Action<CombatUnit> OnUnitDied;
 
@@ -77,7 +75,7 @@ public class CombatUnit : INameAndDescription
         return Mathf.Lerp(_minDamage, _maxDamage, Random.value);
     }
 
-    private void Damage(float damage)
+    internal protected void Damage(float damage)
     {
         _currentHealth -= damage;
         if (_currentHealth < 0)
@@ -90,41 +88,6 @@ public class CombatUnit : INameAndDescription
     }
 
     // TODO: i feel like this should not be in here
-    public async Awaitable DoTurnAsync(CombatSystem combat, CombatGUI gui)
-    {
-        if (_isPlayerControlled)
-        {
-            var actions = new string[] { "Attack", "Do nothing" };
-            var selectedIndex = await gui.SelectActionAsync(actions);
-            if (selectedIndex == 0) // "attack 
-            {
-                await Awaitable.NextFrameAsync(); // to avoid one input counting for both selections.
-                var target = await combat.SelectEnemyUnitAsync(this);
-                var damage = GetAttackDamage();
-                target.Damage(damage);
-                await gui.ShowDismissableTextAsync($"{Name} hit {target.Name} for {damage:0.0} damage");
-            }
-            else
-            {
-                await gui.ShowDismissableTextAsync($"{Name} decided to do nothing.");
-            }
-        }
-        else
-        {
-            var action = Random.Range(0, 2);
-            if (action == 0)
-            {
-                var enemies = combat.GetEnemies(this);
-                var target = enemies[Random.Range(0, enemies.Count)];
-                var damage = GetAttackDamage();
-                target.Damage(damage);
-                await gui.ShowDismissableTextAsync($"{Name} hit {target.Name} for {damage:0.0} damage");
-            }
-            else
-            {
-                await gui.ShowDismissableTextAsync($"{Name} decided to do nothing.");
-            }
-        }
-    }
+    public abstract Awaitable DoTurnAsync(CombatSystem combat, CombatGUI gui);
 }
 
