@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Ab_SimpleHeal
   m_EditorClassIdentifier: 
   <Name>k__BackingField: Simple Heal
+  <Description>k__BackingField: Heals an ally for a small amount of HP.
   <Targetting>k__BackingField: 2
   <TargetCount>k__BackingField: 1
   <MinAmount>k__BackingField: 2
   <MaxAmount>k__BackingField: 5
   <EffectType>k__BackingField: 2
+  <AbilityCost>k__BackingField: 0

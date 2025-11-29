@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Ab_WideSlash
   m_EditorClassIdentifier: 
   <Name>k__BackingField: Wide Slash
+  <Description>k__BackingField: A slash that does low damage to multiple targets.
   <Targetting>k__BackingField: 1
   <TargetCount>k__BackingField: 2
   <MinAmount>k__BackingField: 2
   <MaxAmount>k__BackingField: 5
   <EffectType>k__BackingField: 1
+  <AbilityCost>k__BackingField: 0
