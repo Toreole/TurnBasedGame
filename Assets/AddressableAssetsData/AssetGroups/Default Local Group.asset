@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_GUID: fb190aab2d3d879408915c9aeb176de7
+  m_SerializeEntries:
+  - m_GUID: c7ccc1d4af2ccba4f8bdd9e264236e02
+    m_Address: Assets/GameData/Units/UD_Ally_B_Persist.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PlayerUnits
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f152dedd587efda4b990bd9f9c9e4702
+    m_Address: Assets/GameData/Units/UD_Ally_A_Persist.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PlayerUnits
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: da55edb8cc00e6a4e90692d063b885c3, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ebc5ba7e5f85b97479b175669f3cd527, type: 2}
+    - {fileID: 11400000, guid: 17185d771f9e5cf4ca028b6e9d86a467, type: 2}
