@@ -23,6 +23,9 @@ public class UnitDefinition : ScriptableObject
     [field: SerializeField]
     public float MaxDamage { get; private set; }
 
+    [field: SerializeField]
+    public Ability[] Abilities { get; private set; }
+
     internal virtual CombatUnit InstantiateUnit(int instanceId, int counter)
     {
         var name = $"{UnitName} {(char)('A' + counter)}";

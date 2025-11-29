@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: UD_Ally_B_Persist
   m_EditorClassIdentifier: 
   <Prefab>k__BackingField: {fileID: 1090580327573074848, guid: 244d11338ab2af64e9c8a5b1651ed1ac, type: 3}
-  <UnitName>k__BackingField: Player Ally
+  <UnitName>k__BackingField: Priest Ally
   <MaxHealth>k__BackingField: 20
   <MaxMana>k__BackingField: 20
   <IsPlayerControlled>k__BackingField: 1
   <MinDamage>k__BackingField: 10
   <MaxDamage>k__BackingField: 20
+  <Abilities>k__BackingField:
+  - {fileID: 11400000, guid: 9e9f72e5c726aa44582942af5d2a1ade, type: 2}

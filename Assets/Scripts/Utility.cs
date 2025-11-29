@@ -1,5 +1,7 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 public static class Utility
 {
@@ -30,5 +32,10 @@ public static class Utility
         {
             _gameObject.SetActive(false);
         }
+    }
+
+    public static List<T> ListOf<T>(params T[] objects)
+    {
+        return new List<T>(objects);
     }
 }

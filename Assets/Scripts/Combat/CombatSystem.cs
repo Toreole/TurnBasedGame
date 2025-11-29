@@ -212,13 +212,18 @@ public class CombatSystem : ProviderBehaviour
         return units[selectedIndex];
     }
 
+    public async Awaitable<IReadOnlyList<CombatUnit>> SelectEnemiesAsync(CombatUnit source, int count)
+        => await SelectUnitsAsync(GetEnemies(source), count);
+    public async Awaitable<IReadOnlyList<CombatUnit>> SelectAlliesAsync(CombatUnit source, int count)
+        => await SelectUnitsAsync(GetAllies(source), count);
+
     // NOTE: allow "circular" selections? i.e. wrap from right side back to left?
     private async Awaitable<IReadOnlyList<CombatUnit>> SelectUnitsAsync(IReadOnlyList<CombatUnit> units, int maxCount)
     {
         var selectedIndex = 0;
         var maxIndex = Math.Max(0, units.Count - maxCount);
 
-        for (int i = selectedIndex; i < units.Count && i < selectedIndex + maxCount; i++)
+        for (int i = selectedIndex; i < units.Count && i < maxCount; i++)
             units[i].PrefabInstance.SetSelected(true);
 
         while (Input.GetKeyDown(KeyCode.Return) == false)
@@ -229,21 +234,21 @@ public class CombatSystem : ProviderBehaviour
                 selectedIndex++;
             if (Input.GetKeyDown(KeyCode.LeftArrow))
                 selectedIndex--;
-            if (selectedIndex < 0 || selectedIndex >= units.Count)
+            if (selectedIndex < 0 || selectedIndex > maxIndex)
             {
                 selectedIndex = oldSelection;
             } 
-            else
+            else if (selectedIndex != oldSelection)
             {
                 if (oldSelection < selectedIndex) // selection shifts right
                 {
+                    units[selectedIndex + maxCount - 1].PrefabInstance.SetSelected(true);
                     units[oldSelection].PrefabInstance.SetSelected(false);
-                    units[selectedIndex+maxCount].PrefabInstance.SetSelected(true);
                 } 
                 else // selection shifts left
                 {
-                    units[oldSelection].PrefabInstance.SetSelected(true);
-                    units[selectedIndex + maxCount].PrefabInstance.SetSelected(false);
+                    units[selectedIndex].PrefabInstance.SetSelected(true);
+                    units[oldSelection + maxCount - 1].PrefabInstance.SetSelected(false);
                 }
             }
             await Awaitable.NextFrameAsync();

@@ -19,3 +19,5 @@ MonoBehaviour:
   <IsPlayerControlled>k__BackingField: 1
   <MinDamage>k__BackingField: 10
   <MaxDamage>k__BackingField: 20
+  <Abilities>k__BackingField:
+  - {fileID: 11400000, guid: 12c3b038d79ed024687f8e35c19134fd, type: 2}
