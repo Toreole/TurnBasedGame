@@ -55,8 +55,15 @@ public class CombatSystem : ProviderBehaviour
     {
         var player = DependencyService.RequestDependency<PlayerMovement>();
         player.enabled = false;
-        // transitions
+        // transitions the screen from normal gameplay into combat
+        // calls SetupCamera when the transition is ready
+        // e.g. when a fade-to-black transition has fully blacked out the screen.
+        // this serves to hide the camera teleporting from plain view.
         await _screenTransitioner.TriggerAsync(SetupCamera);
+
+        _combatGUI.Activate();
+        _combatArea.gameObject.SetActive(true);
+
         await DoCombatAsync();
     }
 
@@ -70,26 +77,25 @@ public class CombatSystem : ProviderBehaviour
 
     private async Awaitable DoCombatAsync()
     {
-        // bla bla setup.
-        //_allyArea.gameObject.SetActive(true);
-        //_enemyArea.gameObject.SetActive(true);
-        _combatGUI.Activate();
-        _combatArea.gameObject.SetActive(true);
-
         await _combatGUI.ShowDismissableTextAsync("You've been attacked!");
 
         // now do each units turn after each other.
         await CombatLoopAsync();
         // rewards and stuff would be given out in here i suppose.
-        EndCombatAsync();
+        await EndCombatAsync();
     }
 
+    /// <summary>
+    /// Asynchrounously runs the combat loop, doing every turn in order.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="NullReferenceException">illegal output from _combatState.GetNextTurn()</exception>
     private async Awaitable CombatLoopAsync()
     {
+        Debug.Log("combatLoop entered");
         _combatState = new(this);
         _combatState.Init(_debugAllies, _currentEncounter);
         _combatState.ShuffleCombatOrder(10);
-        Assert.IsNotNull(_combatState);
         while (_combatState.Status == CombatStatus.InProgress)
         {
             var unit = _combatState.GetNextTurn() 
@@ -110,8 +116,6 @@ public class CombatSystem : ProviderBehaviour
                 Debug.LogError("yikes");
                 break;
         }
-        Assert.IsNotNull(_combatState);
-        await EndCombatAsync();
     }
 
     // TODO: persist health, etc. of player and persistent allies.
