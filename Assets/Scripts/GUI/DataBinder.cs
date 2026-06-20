@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -14,27 +15,27 @@ public class DataBinder : MonoBehaviour
     private UIBehaviour _target;
 
     [SerializeField]
-    private List<DataBinding> _bindings;
+    private List<DataBinding> _bindings = new();
 
     private IDataBindingSource _source;
 
     // 
     readonly static Regex bindRegex = new("{{\\s*([a-zA-Z0-9]+)(:.+)?\\s*}}");
 
-    private readonly List<DataBinding> _dirtyBindings;
+    private readonly List<DataBinding> _dirtyBindings = new();
 
     /// <summary>
     /// 
     /// </summary>
-    private readonly Dictionary<string, PropertyInfo> _targetProperties;
+    private readonly Dictionary<string, PropertyInfo> _targetProperties = new();
 
     /// <summary>
     /// Cached values stored in the relevant source properties.
     /// </summary>
-    private readonly Dictionary<string, object> _sourcePropertyValues;
-    private readonly Dictionary<string, PropertyInfo> _sourceProperties;
+    private readonly Dictionary<string, object> _sourcePropertyValues = new();
+    private readonly Dictionary<string, PropertyInfo> _sourceProperties = new();
 
-    private readonly Dictionary<string, List<DataBinding>> _affectedBindingsBySourceProperty;
+    private readonly Dictionary<string, List<DataBinding>> _affectedBindingsBySourceProperty = new();
 
     // ensure we have a target. 
     private void Awake()
@@ -60,12 +61,10 @@ public class DataBinder : MonoBehaviour
     public void AddBinding(DataBinding binding)
     {
         _bindings.Add(binding);
-        if (_source != null && _target != null)
-        {
-            binding.SetProperty(_target, _sourcePropertyValues);
-        }
-
         ParseBinding(binding);
+        Debug.Log("AddBinding");
+        if (_source != null)
+            binding.Apply(_target, _sourcePropertyValues);
     } 
 
     /// <summary>
@@ -80,17 +79,29 @@ public class DataBinder : MonoBehaviour
         // check what sourceProperties are used for this binding.
         if (targetProp.PropertyType == typeof(string))
         {
-            var matches = bindRegex.Matches(binding.TargetPropertyName);
+            var matches = bindRegex.Matches(binding.PropertyTemplate);
             foreach (Match match in matches)
             {
                 var sourcePropertyName = match.Groups[1].Value;
                 RegisterAffected(sourcePropertyName, binding);
+                Debug.Log($"ParseBind - Register: {sourcePropertyName} -> {binding.TargetPropertyName}");
                 RegisterSourceProperty(sourcePropertyName);
             }
+        } 
+        else
+        {
+            var sourcePropertyName = binding.PropertyTemplate;
+            RegisterAffected(sourcePropertyName, binding);
+            Debug.Log($"ParseBind - Register: {sourcePropertyName} -> {binding.TargetPropertyName}");
+            RegisterSourceProperty(sourcePropertyName);
         }
-
     }
 
+    /// <summary>
+    /// Registers a data binding as being affected by changes in the given source property.
+    /// </summary>
+    /// <param name="sourcePropertyName"></param>
+    /// <param name="binding"></param>
     private void RegisterAffected(string sourcePropertyName, DataBinding binding)
     {
         if (_affectedBindingsBySourceProperty.ContainsKey(sourcePropertyName))
@@ -103,14 +114,24 @@ public class DataBinder : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Registers the source PropertyInfo and the current value of the property in local cache.
+    /// </summary>
+    /// <param name="sourcePropertyName"></param>
     private void RegisterSourceProperty(string sourcePropertyName)
     {
-        Assert.IsNotNull(_source);
+        if (_source == null)
+            return;
         var prop = _source.GetType().GetProperty(sourcePropertyName);
         _sourceProperties[sourcePropertyName] = prop;
         _sourcePropertyValues[sourcePropertyName] = prop.GetValue(_source);
     }
 
+    /// <summary>
+    /// Gets a target property from cache, or obtains it directly and registers it in the cache.
+    /// </summary>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
     private PropertyInfo GetTargetProperty(string propertyName)
     {
         if (_targetProperties.ContainsKey(propertyName))
@@ -149,22 +170,36 @@ public class DataBinder : MonoBehaviour
         if (_source != null)
         {
             _source.OnChange -= OnSourceChanged;
+            _source = source;
+        } 
+        else
+        {
+            _source = source;
+            foreach (var affects in _affectedBindingsBySourceProperty)
+            {
+                Debug.Log($"BindTo - Register: {affects.Key} -> {affects.Value.FirstOrDefault()?.TargetPropertyName}");
+                RegisterSourceProperty(affects.Key);
+            }
         }
-        _source = source;
         source.OnChange += OnSourceChanged;
+
+        // TODO: set up source properties and source property values.
 
         foreach (var binding in _bindings)
         {
-            binding.SetProperty(_target, _sourcePropertyValues);
+            binding.Apply(_target, _sourcePropertyValues);
         }
     }
 
     private void LateUpdate()
     {
+        if (_source == null)
+            return;
+
         // update dirty bindings.
         foreach(var binding in _dirtyBindings)
         {
-            binding.SetProperty(_target, _sourcePropertyValues);
+            binding.Apply(_target, _sourcePropertyValues);
         }
         _dirtyBindings.Clear();
     }
@@ -174,6 +209,7 @@ public class DataBinder : MonoBehaviour
         var affectedBindings = _affectedBindingsBySourceProperty[propertyName];
         if (affectedBindings == null || affectedBindings.Count == 0)
             return;
+        _sourcePropertyValues[propertyName] = value;
         foreach (var binding in affectedBindings)
         {
             if (!_dirtyBindings.Contains(binding))
@@ -215,7 +251,7 @@ public class DataBinding
 
     readonly static Regex bindRegex = new("{{\\s*([a-zA-Z0-9]+)(:.+)?\\s*}}");
 
-    public void SetProperty(UIBehaviour target, Dictionary<string, object> sourceValues)
+    public void Apply(UIBehaviour target, Dictionary<string, object> sourceValues)
     {
         var targetProp = target.GetType().GetProperty(_targetPropertyName);
         if (targetProp == null || targetProp.GetSetMethod().IsPrivate)
@@ -232,6 +268,8 @@ public class DataBinding
             foreach (Match boundValue in boundValues)
             {
                 string sourceName = boundValue.Groups[1].Value;
+                Debug.Log(sourceName);
+                Debug.Log(sourceValues.Keys.ToCommaSeparatedString());
                 filledTemplate = filledTemplate.Replace(boundValue.Value, sourceValues[sourceName].ToString());
             }
             targetProp.SetValue(target, filledTemplate);
