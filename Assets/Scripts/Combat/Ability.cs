@@ -34,6 +34,11 @@ public class Ability : ScriptableObject, INameAndDescription
     [field: SerializeField]
     public int MaxAmount { get; private set; }
 
+    // it would be really awesome to have a scripting language
+    // to define the *behaviour* of effects.
+    // so you can change behaviour on the fly without having to recompile and all that stuff.
+    // i kind of want to do debuffs and stuff too, which are going to have to get processed each turn. (CombatUnit->DoTurnAsync)
+
     [field: SerializeField]
     public EffectType EffectType { get; private set; }
 

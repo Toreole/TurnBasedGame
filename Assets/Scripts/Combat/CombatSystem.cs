@@ -92,7 +92,6 @@ public class CombatSystem : ProviderBehaviour
     /// <exception cref="NullReferenceException">illegal output from _combatState.GetNextTurn()</exception>
     private async Awaitable CombatLoopAsync()
     {
-        Debug.Log("combatLoop entered");
         _combatState = new(this);
         _combatState.Init(_debugAllies, _currentEncounter);
         _combatState.ShuffleCombatOrder(10);
