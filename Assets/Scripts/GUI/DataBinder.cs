@@ -62,7 +62,7 @@ public class DataBinder : MonoBehaviour
     {
         _bindings.Add(binding);
         ParseBinding(binding);
-        Debug.Log("AddBinding");
+        // Debug.Log("AddBinding");
         if (_source != null)
             binding.Apply(_target, _sourcePropertyValues);
     } 
@@ -75,6 +75,8 @@ public class DataBinder : MonoBehaviour
     private void ParseBinding(DataBinding binding)
     {
         var targetProp = GetTargetProperty(binding.TargetPropertyName);
+        if (targetProp == null)
+            return; // error state
 
         // check what sourceProperties are used for this binding.
         if (targetProp.PropertyType == typeof(string))
@@ -84,7 +86,7 @@ public class DataBinder : MonoBehaviour
             {
                 var sourcePropertyName = match.Groups[1].Value;
                 RegisterAffected(sourcePropertyName, binding);
-                Debug.Log($"ParseBind - Register: {sourcePropertyName} -> {binding.TargetPropertyName}");
+                // Debug.Log($"ParseBind - Register: {sourcePropertyName} -> {binding.TargetPropertyName}");
                 RegisterSourceProperty(sourcePropertyName);
             }
         } 
@@ -92,7 +94,7 @@ public class DataBinder : MonoBehaviour
         {
             var sourcePropertyName = binding.PropertyTemplate;
             RegisterAffected(sourcePropertyName, binding);
-            Debug.Log($"ParseBind - Register: {sourcePropertyName} -> {binding.TargetPropertyName}");
+            // Debug.Log($"ParseBind - Register: {sourcePropertyName} -> {binding.TargetPropertyName}");
             RegisterSourceProperty(sourcePropertyName);
         }
     }
@@ -177,7 +179,7 @@ public class DataBinder : MonoBehaviour
             _source = source;
             foreach (var affects in _affectedBindingsBySourceProperty)
             {
-                Debug.Log($"BindTo - Register: {affects.Key} -> {affects.Value.FirstOrDefault()?.TargetPropertyName}");
+                // Debug.Log($"BindTo - Register: {affects.Key} -> {affects.Value.FirstOrDefault()?.TargetPropertyName}");
                 RegisterSourceProperty(affects.Key);
             }
         }
@@ -268,8 +270,6 @@ public class DataBinding
             foreach (Match boundValue in boundValues)
             {
                 string sourceName = boundValue.Groups[1].Value;
-                Debug.Log(sourceName);
-                Debug.Log(sourceValues.Keys.ToCommaSeparatedString());
                 filledTemplate = filledTemplate.Replace(boundValue.Value, sourceValues[sourceName].ToString());
             }
             targetProp.SetValue(target, filledTemplate);
