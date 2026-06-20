@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 namespace Assets.Scripts.GUI
@@ -23,10 +24,24 @@ namespace Assets.Scripts.GUI
             } 
         }
 
+        public int FontSize
+        {
+            get => fontSize; set
+            {
+                if (fontSize != value)
+                    OnChange?.Invoke(nameof(FontSize), value);
+                fontSize = value;
+            }
+        }
+
         // Use this for initialization
         void Start()
         {
-            GetComponent<DataBinder>().BindTo(this);
+            var binder = GetComponent<DataBinder>();
+            binder.BindTo(this);
+            binder.AddBinding(new DataBinding(nameof(TextMeshProUGUI.text), "hello, {{Name}}. The current font size is: {{FontSize}}"));
+            binder.AddBinding(new DataBinding(nameof(TextMeshProUGUI.fontSize), nameof(FontSize)));
+
         }
 
     }
