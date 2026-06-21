@@ -62,6 +62,7 @@ namespace Toreole.Turnbased.Combat
             await _screenTransitioner.TriggerAsync(SetupCamera);
 
             _combatGUI.Activate();
+
             _combatArea.gameObject.SetActive(true);
 
             await DoCombatAsync();
@@ -94,6 +95,11 @@ namespace Toreole.Turnbased.Combat
         {
             _combatState = new(this);
             _combatState.Init(_debugAllies, _currentEncounter);
+
+            // GUI for units
+            foreach (var unit in _combatState.GetAllies())
+                _combatGUI.SetupAllyUnitGui(unit);
+
             _combatState.ShuffleCombatOrder(10);
             while (_combatState.Status == CombatStatus.InProgress)
             {
@@ -127,6 +133,7 @@ namespace Toreole.Turnbased.Combat
             _combatState = null;
 
             await _combatGUI.ShowDismissableTextAsync("You win!");
+            _combatGUI.FinalizeCurrentCombat();
             _combatGUI.Deactivate();
             await Awaitable.NextFrameAsync();
             Camera.main.transform.position = _oldCameraPosition;

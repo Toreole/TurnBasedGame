@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using Toreole.Turnbased.Combat;
+using Toreole.Turnbased.GUI.Binding;
+using UnityEngine;
+using UnityEngine.ResourceManagement.ResourceProviders.Simulation;
 
 /// <summary>
 /// Abstract class that provides the interface for the CombatGUI to the CombatSystem.
@@ -14,6 +17,37 @@
 // TODO: CombatGUI needs capability of showing Resource Bars for Allies.
 public abstract class CombatGUI : ProviderBehaviour
 {
+    [SerializeField]
+    private GameObject _unitGuiPrefab;
+
+    [SerializeField]
+    private Transform _allyUnitGuiParent, _enemyUnitGuiParent;
+
+    public virtual void SetupAllyUnitGui(CombatUnit unit)
+    {
+        SetupUnitGui(unit, _allyUnitGuiParent);
+    }
+
+    public virtual void SetupEnemyUnitGui(CombatUnit unit)
+    {
+        SetupUnitGui(unit, _enemyUnitGuiParent);
+    }
+
+    protected virtual void SetupUnitGui(CombatUnit unit, Transform parent)
+    {
+        var obj = Instantiate(_unitGuiPrefab, parent);
+        var binder = obj.GetComponent<DataBinder>();
+        binder.BindTo(unit);
+    }
+
+    public virtual void FinalizeCurrentCombat()
+    {
+        while (_allyUnitGuiParent.childCount > 0)
+            Destroy(_allyUnitGuiParent.GetChild(0).gameObject);
+        while (_enemyUnitGuiParent.childCount > 0)
+            Destroy(_enemyUnitGuiParent.GetChild(0).gameObject);
+    }
+
     /// <summary>
     /// Show a dismissable text on the GUI. 
     /// Await this method to wait until the text has been dismissed.

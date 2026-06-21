@@ -152,7 +152,6 @@ namespace Toreole.Turnbased.Combat
             return _combatOrder[_currentUnitIndex];
         }
 
-
         internal void ShuffleCombatOrder(int iterations)
         {
             for (int i = 0; i < iterations; i++)
@@ -161,6 +160,15 @@ namespace Toreole.Turnbased.Combat
                 var b = Random.Range(0, _combatOrder.Count);
                 (_combatOrder[a], _combatOrder[b]) = (_combatOrder[b], _combatOrder[a]);
             }
+        }
+
+        public IReadOnlyList<CombatUnit> GetAllies()
+        {
+            return _allyUnits.ToList();
+        }
+        public IReadOnlyList<CombatUnit> GetEnemies()
+        {
+            return _enemyUnits.ToList();
         }
 
         // returns a

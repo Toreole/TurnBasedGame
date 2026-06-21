@@ -20,6 +20,8 @@ namespace Toreole.Turnbased.GUI.Binding
         [SerializeField]
         private List<DataBinding> _bindings = new();
 
+        private bool _startRun = false;
+
         private IDataBindingSource _source;
 
         // 
@@ -59,6 +61,12 @@ namespace Toreole.Turnbased.GUI.Binding
 
         private void Start()
         {
+            if (_startRun)
+            {
+                _startRun = true;
+                return;
+            }
+
             foreach (var binding in _bindings)
             {
                 ParseBinding(binding);
@@ -182,20 +190,19 @@ namespace Toreole.Turnbased.GUI.Binding
             if (_source != null)
             {
                 _source.OnChange -= OnSourceChanged;
-                _source = source;
-            } 
-            else
-            {
-                _source = source;
-                foreach (var affects in _affectedBindingsBySourceProperty)
-                {
-                    // Debug.Log($"BindTo - Register: {affects.Key} -> {affects.Value.FirstOrDefault()?.TargetPropertyName}");
-                    RegisterSourceProperty(affects.Key);
-                }
             }
+            _source = source;
+            foreach (var affects in _affectedBindingsBySourceProperty)
+            {
+                // Debug.Log($"BindTo - Register: {affects.Key} -> {affects.Value.FirstOrDefault()?.TargetPropertyName}");
+                RegisterSourceProperty(affects.Key);
+            }
+            
             source.OnChange += OnSourceChanged;
 
-            // TODO: set up source properties and source property values.
+            // set up source properties and source property values.
+            // in the case we call BindTo before Start() has the opportunity to run "naturally".
+            Start();
 
             foreach (var binding in _bindings)
             {
@@ -275,7 +282,7 @@ namespace Toreole.Turnbased.GUI.Binding
         /// </summary>
         /// <param name="target"></param>
         /// <param name="sourceValues"></param>
-        public void Apply(UIBehaviour target, Dictionary<string, object> sourceValues)
+        public void Apply(UnityEngine.Object target, Dictionary<string, object> sourceValues)
         {
             // TODO: target property could easily be cached.
             var targetProp = target.GetType().GetProperty(_targetPropertyName);
@@ -310,7 +317,7 @@ namespace Toreole.Turnbased.GUI.Binding
                 }
                 catch (Exception ex)
                 {
-                    // could not convert
+                    // could not convert or find the property in the sourceValues.
                     Debug.LogError(ex.ToString());
                 }
             
