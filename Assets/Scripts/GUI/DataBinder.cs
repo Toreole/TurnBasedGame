@@ -5,14 +5,15 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
 
 namespace Toreole.Turnbased.GUI.Binding
 { 
     public class DataBinder : MonoBehaviour
     {
+        [SerializeField]
+        private UnityEngine.Object _defaultSource;
+
         [SerializeField]
         private UIBehaviour _target;
 
@@ -39,13 +40,21 @@ namespace Toreole.Turnbased.GUI.Binding
 
         private readonly Dictionary<string, List<DataBinding>> _affectedBindingsBySourceProperty = new();
 
-        // ensure we have a target. 
         private void Awake()
         {
+            // no need for BindTo(source) here since bind parsing in Start will handle everything.
+            if (_defaultSource != null) 
+            {
+                if (_defaultSource is IDataBindingSource ids)
+                    _source = ids;
+                if (_defaultSource is Component or GameObject)
+                    _source = _defaultSource.GetComponent<IDataBindingSource>();
+            }
             if (_target == null)
             {
                 _target = GetComponent<UIBehaviour>();
             }
+            
         }
 
         private void Start()
@@ -64,7 +73,6 @@ namespace Toreole.Turnbased.GUI.Binding
         {
             _bindings.Add(binding);
             ParseBinding(binding);
-            // Debug.Log("AddBinding");
             if (_source != null)
                 binding.Apply(_target, _sourcePropertyValues);
         } 
@@ -208,6 +216,10 @@ namespace Toreole.Turnbased.GUI.Binding
             _dirtyBindings.Clear();
         }
 
+        /// <summary>
+        /// Callback for when a property on the source changes.
+        /// Will mark affected bindings as dirty.
+        /// </summary>
         private void OnSourceChanged(string propertyName, object value)
         {
             var affectedBindings = _affectedBindingsBySourceProperty[propertyName];
@@ -233,11 +245,15 @@ namespace Toreole.Turnbased.GUI.Binding
     [Serializable]
     public class DataBinding
     {
+        // Every DataBinding should be able to have a different target. Useful for complex GUI Components.
+        // [SerializeField]
+        // private UIBehaviour _overrideTarget;
+
         [SerializeField]
         private string _targetPropertyName;
 
         /// <summary>
-        /// For string properties this can be "hello {{Name}}". 
+        /// For string properties these are templated strings "hello {{Name}}". 
         /// For other types such as floats, it must only be "Number".
         /// </summary>
         [SerializeField]
@@ -252,11 +268,16 @@ namespace Toreole.Turnbased.GUI.Binding
             _propertyTemplate = valueTemplate;
         }
 
-
         readonly static Regex bindRegex = new("{{\\s*([a-zA-Z0-9]+)(:.+)?\\s*}}");
 
+        /// <summary>
+        /// Applies the configured binding to the target by updating the target property's value.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="sourceValues"></param>
         public void Apply(UIBehaviour target, Dictionary<string, object> sourceValues)
         {
+            // TODO: target property could easily be cached.
             var targetProp = target.GetType().GetProperty(_targetPropertyName);
             if (targetProp == null || targetProp.GetSetMethod().IsPrivate)
             {
@@ -266,12 +287,14 @@ namespace Toreole.Turnbased.GUI.Binding
 
             if (targetProp.PropertyType == typeof(string))
             {
+                // TODO: Move this into a string formatting method.
                 var filledTemplate = _propertyTemplate;
                 var boundValues = bindRegex.Matches(_propertyTemplate);
 
                 foreach (Match boundValue in boundValues)
                 {
                     string sourceName = boundValue.Groups[1].Value;
+                    // TODO: use boundValue.Groups[2] as formatting hint when possible.
                     filledTemplate = filledTemplate.Replace(boundValue.Value, sourceValues[sourceName].ToString());
                 }
                 targetProp.SetValue(target, filledTemplate);
