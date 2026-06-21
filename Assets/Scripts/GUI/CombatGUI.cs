@@ -42,10 +42,11 @@ public abstract class CombatGUI : ProviderBehaviour
 
     public virtual void FinalizeCurrentCombat()
     {
-        while (_allyUnitGuiParent.childCount > 0)
-            Destroy(_allyUnitGuiParent.GetChild(0).gameObject);
-        while (_enemyUnitGuiParent.childCount > 0)
-            Destroy(_enemyUnitGuiParent.GetChild(0).gameObject);
+        for (int i = _allyUnitGuiParent.childCount-1; i >= 0; i--)
+            Destroy(_allyUnitGuiParent.GetChild(i).gameObject);
+
+        for (int i = _enemyUnitGuiParent.childCount - 1; i >= 0; i--)
+            Destroy(_enemyUnitGuiParent.GetChild(i).gameObject);
     }
 
     /// <summary>
