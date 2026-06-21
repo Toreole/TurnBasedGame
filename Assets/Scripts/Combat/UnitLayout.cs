@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Toreole.Turnbased.Combat;
 
 /// <summary>
 /// abstract UnitLayout. 

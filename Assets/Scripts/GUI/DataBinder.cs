@@ -12,10 +12,10 @@ namespace Toreole.Turnbased.GUI.Binding
     public class DataBinder : MonoBehaviour
     {
         [SerializeField]
-        private UnityEngine.Object _defaultSource;
+        private UnityEngine.Object _defaultSource; // a serializeable object. but the actual source later can be anything
 
         [SerializeField]
-        private UIBehaviour _target;
+        private UnityEngine.Object _target; 
 
         [SerializeField]
         private List<DataBinding> _bindings = new();

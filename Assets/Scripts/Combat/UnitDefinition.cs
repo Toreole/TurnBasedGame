@@ -1,4 +1,5 @@
 using UnityEngine;
+using Toreole.Turnbased.Combat;
 
 [CreateAssetMenu(fileName = "UnitDefinition", menuName = "GameData/UnitDefinition")]
 public class UnitDefinition : ScriptableObject

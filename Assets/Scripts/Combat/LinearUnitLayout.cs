@@ -2,6 +2,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Toreole.Turnbased.Combat;
 
 public class LinearUnitLayout : UnitLayout
 {
