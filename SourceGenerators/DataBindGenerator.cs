@@ -123,7 +123,7 @@ public {fieldType} {propertyName}
 
     {(privateSetterOpt.Value is true? "private ": "")}set
     {{
-        if (this.{fieldName} == value) 
+        if (this.{fieldName} != value) 
         {{
             this.{fieldName} = value;
             this.OnChange?.Invoke(nameof({propertyName}), value);
