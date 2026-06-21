@@ -2,47 +2,47 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using Toreole.Turnbased.GUI.Binding;
 
-namespace Assets.Scripts.GUI
+namespace Toreole.Turnbased.GUI
 {
-    public class DummyDataSource : MonoBehaviour, IDataBindingSource
+    public partial class DummyDataSource : MonoBehaviour, IDataBindingSource
     {
+        // IDataBindingSource event
         public event Action<string, object> OnChange;
 
         [SerializeField]
-        private new string name;
+        [ReactiveProperty(PrivateSetter = true)]
+        private string _name;
 
         [SerializeField]
-        private int fontSize = 25;
+        [ReactiveProperty(PrivateSetter = true)]
+        private int _fontSize = 25;
 
-        public string Name { 
-            get => name; 
-            set { 
-                if (name != value) 
-                    OnChange?.Invoke(nameof(Name), value);
-                name = value;
-            } 
-        }
+        [ReactiveProperty(PrivateSetter = true)]
+        private float _health = 50f;
 
-        public int FontSize
-        {
-            get => fontSize; set
-            {
-                if (fontSize != value)
-                    OnChange?.Invoke(nameof(FontSize), value);
-                fontSize = value;
-            }
-        }
 
         // Use this for initialization
         void Start()
         {
             var binder = GetComponent<DataBinder>();
             binder.BindTo(this);
-            binder.AddBinding(new DataBinding(nameof(TextMeshProUGUI.text), "hello, {{Name}}. The current font size is: {{FontSize}}"));
-            binder.AddBinding(new DataBinding(nameof(TextMeshProUGUI.fontSize), nameof(FontSize)));
+            binder.AddBinding(new DataBinding(nameof(TextMeshProUGUI.text), "hello, {{Name}}. The current font size is: {{Health:0.0}}"));
+            binder.AddBinding(new DataBinding(nameof(TextMeshProUGUI.fontSize), "Health"));
 
+            StartCoroutine(DoRandomizeHealth());
         }
+
+        private IEnumerator DoRandomizeHealth()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(0.4f);
+                Health = UnityEngine.Random.Range(0, 50);
+            }
+        }
+
 
     }
 }
