@@ -40,6 +40,9 @@ public abstract class CombatGUI : ProviderBehaviour
         binder.BindTo(unit);
     }
 
+    /// <summary>
+    /// Removes temporary objects created for this combat.
+    /// </summary>
     public virtual void FinalizeCurrentCombat()
     {
         for (int i = _allyUnitGuiParent.childCount-1; i >= 0; i--)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Toreole.Turnbased.Text;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,7 +26,7 @@ namespace Toreole.Turnbased.GUI.Binding
         private IDataBindingSource _source;
 
         // 
-        readonly static Regex bindRegex = new("{{\\s*([a-zA-Z0-9]+)(:.+)?\\s*}}");
+        readonly static Regex bindRegex = new("{{\\s*([a-zA-Z0-9]+)(:[^\\s}]+)?\\s*}}");
 
         private readonly List<DataBinding> _dirtyBindings = new();
 
@@ -223,6 +224,15 @@ namespace Toreole.Turnbased.GUI.Binding
             _dirtyBindings.Clear();
         }
 
+        private void OnDestroy()
+        {
+            if (_source != null)
+            {
+                // unregister just in case.
+                _source.OnChange -= OnSourceChanged;
+            }            
+        }
+
         /// <summary>
         /// Callback for when a property on the source changes.
         /// Will mark affected bindings as dirty.
@@ -275,7 +285,7 @@ namespace Toreole.Turnbased.GUI.Binding
             _propertyTemplate = valueTemplate;
         }
 
-        readonly static Regex bindRegex = new("{{\\s*([a-zA-Z0-9]+)(:.+)?\\s*}}");
+        readonly static Regex bindRegex = new("{{\\s*([a-zA-Z0-9]+)(:[^\\s}]+)?\\s*}}");
 
         /// <summary>
         /// Applies the configured binding to the target by updating the target property's value.
@@ -294,15 +304,20 @@ namespace Toreole.Turnbased.GUI.Binding
 
             if (targetProp.PropertyType == typeof(string))
             {
-                // TODO: Move this into a string formatting method.
+                // TODO: we should realistically only have to match the regex ONCE per binding, ever.
                 var filledTemplate = _propertyTemplate;
                 var boundValues = bindRegex.Matches(_propertyTemplate);
 
                 foreach (Match boundValue in boundValues)
                 {
                     string sourceName = boundValue.Groups[1].Value;
+                    string format = boundValue.Groups[2].Value;
+                    Debug.Log($"Formatting {sourceValues[sourceName]} with format '{format}'");
+                    string formatted = TextFormatting.Format(sourceValues[sourceName], format);
                     // TODO: use boundValue.Groups[2] as formatting hint when possible.
-                    filledTemplate = filledTemplate.Replace(boundValue.Value, sourceValues[sourceName].ToString());
+                    //filledTemplate = filledTemplate.Replace(boundValue.Value, sourceValues[sourceName].ToString());
+                    Debug.Log($"Replacing >{boundValue.Value}< with >{formatted}<");
+                    filledTemplate = filledTemplate.Replace(boundValue.Value, formatted);
                 }
                 targetProp.SetValue(target, filledTemplate);
             }
